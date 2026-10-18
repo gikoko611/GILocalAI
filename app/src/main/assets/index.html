@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GI local AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Chakra+Petch:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#040b07;--panel:#0a1610;--panel2:#10231a;--line:#1b4030;--tx:#dcfce9;--mut:#7fb598;--c1:#2dff8a;--c2:#b6ff3d;--c3:#12b886;--ok:#2dff8a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#eef7f1;--panel:#fff;--panel2:#dff0e6;--line:#aecdbb;--tx:#0a2016;--mut:#4a6b58;--c1:#0a8a4a;--c2:#5f8f00;--c3:#0b7a63;--ok:#0a8a4a}}
+:root[data-theme="light"]{--bg:#eef7f1;--panel:#fff;--panel2:#dff0e6;--line:#aecdbb;--tx:#0a2016;--mut:#4a6b58;--c1:#0a8a4a;--c2:#5f8f00;--c3:#0b7a63;--ok:#0a8a4a}
+:root[data-theme="dark"]{color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--tx);font:500 15px/1.5 "Chakra Petch",system-ui,sans-serif;overflow:hidden}
+body::before{content:"";position:fixed;inset:0;background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 34px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/34px 100%;opacity:.22;pointer-events:none}
+body::after{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+h1,h2,.orb{font-family:Orbitron,"Chakra Petch",sans-serif;letter-spacing:.06em}
+/* splash */
+#splash{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#0f3a22,#030906 70%);color:#dcfce9;transition:opacity .6s}
+#splash.out{opacity:0;pointer-events:none}
+.stage{perspective:700px;height:190px;display:flex;align-items:center;justify-content:center}
+.cube{position:relative;transform-style:preserve-3d;animation:spin 5s linear infinite;width:200px;height:150px}
+.cube span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 118px/1 Orbitron,sans-serif;color:var(--c1)}
+@keyframes spin{from{transform:rotateX(-12deg) rotateY(0)}to{transform:rotateX(-12deg) rotateY(360deg)}}
+.cube span:last-child{color:#fff;text-shadow:0 0 24px var(--c1),0 0 60px var(--c2)}
+.sname{font:600 17px Orbitron,sans-serif;letter-spacing:.38em;margin-top:34px;color:#dff4ff}
+.bar{width:210px;height:4px;background:#0f2f20;margin-top:22px;overflow:hidden;border-radius:2px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2dff8a,#b6ff3d);animation:fill 3.2s ease-out forwards}
+@keyframes fill{to{width:100%}}
+.hint{margin-top:14px;font-size:12px;color:#7f97b8}
+/* shell */
+#app{position:relative;height:100%;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--panel) 90%,transparent)}
+.logo{font:800 15px Orbitron;padding:4px 9px;border:1px solid var(--c1);color:var(--c1);box-shadow:0 0 12px color-mix(in srgb,var(--c1) 40%,transparent)}
+header h1{font-size:15px;flex:1}
+.pill{font-size:12px;padding:3px 10px;border:1px solid var(--line);border-radius:99px;color:var(--mut);max-width:44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill.on{color:var(--ok);border-color:var(--ok)}
+main{flex:1;min-height:0;position:relative}
+section{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;padding:16px}
+section.on{display:flex}
+nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--panel)}
+nav button{background:none;border:0;color:var(--mut);padding:12px 0 10px;font:600 12px "Chakra Petch";cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-top:2px solid transparent}
+nav button.on{color:var(--c1);border-top-color:var(--c1)}
+nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--c1);outline-offset:2px}
+/* chat */
+#log{flex:1;display:flex;flex-direction:column;gap:12px;padding-bottom:8px}
+.msg{max-width:88%;padding:10px 14px;border:1px solid var(--line);background:var(--panel);clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.u{align-self:flex-end;background:var(--panel2);border-color:var(--c3)}
+.msg.a{align-self:flex-start;border-color:var(--c1)}
+.empty{margin:auto;text-align:center;color:var(--mut);max-width:290px}
+.empty b{display:block;font:800 22px Orbitron;color:var(--c1);margin-bottom:8px}
+.composer{display:flex;gap:8px;padding-top:10px;position:sticky;bottom:-16px;background:var(--bg)}
+textarea,input[type=text],select{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--tx);font:500 15px "Chakra Petch";padding:10px 12px;border-radius:0}
+textarea{resize:none;height:46px}
+.btn{background:linear-gradient(135deg,var(--c1),var(--c3));color:#031018;border:0;font:700 14px "Chakra Petch";padding:0 18px;min-height:46px;cursor:pointer;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.btn.ghost{background:var(--panel2);color:var(--tx);border:1px solid var(--line)}
+.btn.stop{background:var(--c2);color:#fff}
+/* models */
+.drop{border:1px dashed var(--c1);padding:26px 16px;text-align:center;background:color-mix(in srgb,var(--c1) 6%,transparent);cursor:pointer;display:block}
+.drop strong{display:block;font:800 16px Orbitron;color:var(--c1);margin-bottom:4px}
+.card{border:1px solid var(--line);background:var(--panel);padding:12px 14px;margin-top:12px;display:flex;align-items:center;gap:10px}
+.card .t{flex:1;min-width:0}
+.card .t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card small{color:var(--mut)}
+.tag{font-size:11px;padding:2px 8px;border:1px solid var(--ok);color:var(--ok)}
+h2{font-size:14px;margin:20px 0 6px;color:var(--c1)}
+.note{color:var(--mut);font-size:13px}
+/* settings */
+.row{margin-top:14px}
+.row label{display:flex;justify-content:space-between;margin-bottom:6px}
+.row label span{color:var(--c1);font-family:Orbitron;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--c1)}
+.dev{border:1px solid var(--line);background:var(--panel);padding:12px 14px;font-size:13px;color:var(--mut);margin-top:16px}
+.sw{display:flex;justify-content:space-between;align-items:center}.sw input{width:22px;height:22px;accent-color:var(--c1)}
+.card .x{min-height:34px;padding:0 12px;flex:none}.card .t span{white-space:normal;overflow-wrap:anywhere}
+@media (prefers-reduced-motion:reduce){.cube{animation:none;transform:rotateX(-12deg) rotateY(-24deg)}.bar i{animation-duration:.01s}}
+</style>
+</head>
+<body>
+<div id="splash" role="button" tabindex="0" aria-label="Skip intro">
+  <div class="stage"><div class="cube" id="cube"></div></div>
+  <div class="sname">LOCAL AI</div>
+  <div class="bar"><i></i></div>
+  <div class="hint">Starting offline engine… tap to skip</div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="logo">GI</div><h1>GI local AI</h1>
+    <div class="pill" id="pill">No model</div>
+  </header>
+  <main>
+    <section id="chat" class="on">
+      <div id="log"><div class="empty" id="empty"><b>GI ready</b>Load a .gguf model in the Models tab, then ask anything. Everything runs on this phone, offline.</div></div>
+      <div class="composer">
+        <textarea id="inp" rows="1" placeholder="Type a message" aria-label="Message"></textarea>
+        <button class="btn" id="send">Send</button>
+      </div>
+    </section>
+
+    <section id="models">
+      <label class="drop" for="file"><strong>Load GGUF model</strong>Tap to pick a .gguf file from storage<input id="file" type="file" accept=".gguf,application/octet-stream" hidden></label>
+      <div id="list"><p class="note" style="margin-top:14px">No models loaded yet.</p></div>
+      <h2>Tips for 4 GB RAM</h2>
+      <p class="note">Use 1B–1.5B models in Q4 quantization (file under about 1.2 GB). Keep context at 1024 or lower. Close other apps before loading.</p>
+    </section>
+
+    <section id="memory">
+      <h2 style="margin-top:0">AI memory</h2>
+      <p class="note">Notes GI keeps between chats. Stored on this phone only.</p>
+      <div class="row sw"><label for="memOn" style="margin:0">Use memory in replies</label><input type="checkbox" id="memOn"></div>
+      <div class="row sw"><label for="keep" style="margin:0">Keep chat history</label><input type="checkbox" id="keep"></div>
+      <div class="composer" style="position:static;margin-top:14px"><input type="text" id="memIn" placeholder="e.g. My name is Aung" aria-label="New memory note"><button class="btn" id="memAdd">Save</button></div>
+      <div id="memList"></div>
+      <button class="btn ghost" id="memClear" style="margin-top:14px">Clear all memory</button>
+      <p class="note" style="margin-top:12px">Tip: in chat, type “remember …” to save a note.</p>
+    </section>
+
+    <section id="settings">
+      <h2 style="margin-top:0">Generation</h2>
+      <div class="row"><label>Temperature <span id="vT"></span></label><input type="range" id="temp" min="0" max="2" step="0.05"></div>
+      <div class="row"><label>Max new tokens <span id="vM"></span></label><input type="range" id="maxt" min="32" max="1024" step="32"></div>
+      <div class="row"><label>Context size <span id="vC"></span></label><input type="range" id="ctx" min="256" max="2048" step="256"></div>
+      <div class="row"><label>CPU threads <span id="vH"></span></label><input type="range" id="thr" min="1" max="8" step="1"></div>
+      <h2>Assistant</h2>
+      <div class="row"><label for="sys">System prompt</label><textarea id="sys" style="height:84px"></textarea></div>
+      <h2>App</h2>
+      <div class="row"><label for="theme">Theme</label><select id="theme"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select></div>
+      <div class="row" style="display:flex;gap:8px"><button class="btn ghost" id="clear" style="flex:1">Clear chat</button><button class="btn ghost" id="reset" style="flex:1">Reset settings</button></div>
+      <div class="dev">Runs fully offline with llama.cpp (armeabi-v7a). Nothing leaves this phone.</div>
+    </section>
+  </main>
+  <nav>
+    <button class="on" data-t="chat"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Chat</button>
+    <button data-t="models"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z M12 12l8-4.5 M12 12v9 M12 12L4 7.5"/></svg>Models</button>
+    <button data-t="memory"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/><path d="M9 2v4 M15 2v4 M9 18v4 M15 18v4 M2 9h4 M2 15h4 M18 9h4 M18 15h4"/></svg>Memory</button>
+    <button data-t="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10 M18 7h2 M4 17h2 M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Settings</button>
+  </nav>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const DEF={temp:0.7,maxt:256,ctx:1024,thr:4,sys:"You are GI, a helpful offline assistant. Answer clearly and briefly.",theme:"auto",memOn:true,keep:true};
+let S={...DEF};
+try{Object.assign(S,JSON.parse(localStorage.getItem("gi-settings")||"{}"))}catch(e){}
+const save=()=>{try{localStorage.setItem("gi-settings",JSON.stringify(S))}catch(e){}};
+
+// 3D GI logo: stacked layers give depth
+const cube=$("#cube");
+for(let i=-9;i<=9;i++){const s=document.createElement("span");s.textContent="GI";s.style.transform="translateZ("+(i*2.4)+"px)";s.style.opacity=i===9?1:.55;s.style.color=i<0?"#12b886":"#2dff8a";cube.appendChild(s)}
+cube.lastChild.style.color="#fff";cube.lastChild.style.textShadow="0 0 24px #2dff8a,0 0 60px #b6ff3d";
+const splash=$("#splash");let gone=false;
+const hide=()=>{if(gone)return;gone=true;splash.classList.add("out");setTimeout(()=>splash.remove(),700)};
+splash.addEventListener("click",hide);splash.addEventListener("keydown",hide);setTimeout(hide,3600);
+
+// theme
+function theme(){const r=document.documentElement;S.theme==="auto"?r.removeAttribute("data-theme"):r.setAttribute("data-theme",S.theme)}
+// tabs
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav button,section").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");$("#"+b.dataset.t).classList.add("on")});
+
+// settings
+const map={temp:["vT",v=>(+v).toFixed(2)],maxt:["vM",v=>v],ctx:["vC",v=>v],thr:["vH",v=>v]};
+function paint(){for(const k in map){$("#"+k).value=S[k];$("#"+map[k][0]).textContent=map[k][1](S[k])}$("#sys").value=S.sys;$("#theme").value=S.theme;$("#memOn").checked=S.memOn;$("#keep").checked=S.keep;theme()}
+for(const k in map)$("#"+k).oninput=e=>{S[k]=+e.target.value;paint();save()};
+$("#sys").oninput=e=>{S.sys=e.target.value;save()};
+$("#theme").onchange=e=>{S.theme=e.target.value;theme();save()};
+$("#reset").onclick=()=>{S={...DEF};paint();save()};
+paint();
+
+// models
+let model=null;
+const fmt=b=>b>1e9?(b/1e9).toFixed(2)+" GB":(b/1e6).toFixed(0)+" MB";
+$("#file").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  if(!/\.gguf$/i.test(f.name)){$("#list").innerHTML='<p class="note" style="margin-top:14px">That file is not a .gguf model. Pick a file ending in .gguf.</p>';return}
+  model=f;$("#pill").textContent=f.name;$("#pill").classList.add("on");
+  const warn=f.size>1.6e9?'<small>Large for 4 GB RAM. Try a smaller quantization.</small>':'<small>'+fmt(f.size)+'</small>';
+  $("#list").innerHTML='<div class="card"><div class="t"><b></b>'+warn+'</div><span class="tag">Loaded</span></div>';
+  $("#list b").textContent=f.name;
+};
+
+// memory
+let mem=[];try{mem=JSON.parse(localStorage.getItem("gi-mem")||"[]")}catch(e){}
+const saveMem=()=>{try{localStorage.setItem("gi-mem",JSON.stringify(mem))}catch(e){}};
+function memRender(){const l=$("#memList");l.innerHTML="";
+  if(!mem.length){l.innerHTML='<p class="note" style="margin-top:14px">No memory yet. Add a note above, or type “remember …” in chat.</p>';return}
+  mem.forEach((m,i)=>{const c=document.createElement("div");c.className="card";
+    const t=document.createElement("div");t.className="t";const sp=document.createElement("span");sp.textContent=m;t.appendChild(sp);
+    const b=document.createElement("button");b.className="btn ghost x";b.textContent="Delete";
+    b.onclick=()=>{mem.splice(i,1);saveMem();memRender()};
+    c.append(t,b);l.appendChild(c)})}
+function memAdd(x){x=x.trim().slice(0,200);if(!x)return false;mem.unshift(x);mem=mem.slice(0,50);saveMem();memRender();return true}
+$("#memAdd").onclick=()=>{if(memAdd($("#memIn").value))$("#memIn").value=""};
+$("#memIn").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#memAdd").click()}});
+$("#memClear").onclick=()=>{mem=[];saveMem();memRender()};
+$("#memOn").onchange=e=>{S.memOn=e.target.checked;save()};
+$("#keep").onchange=e=>{S.keep=e.target.checked;save();if(!S.keep){try{localStorage.removeItem("gi-chat")}catch(x){}}else saveChat()};
+memRender();
+
+// chat (simulated)
+const log=$("#log");let timer=null;
+function add(cls,txt){$("#empty")&&$("#empty").remove();const d=document.createElement("div");d.className="msg "+cls;d.textContent=txt;log.appendChild(d);d.scrollIntoView({block:"end"});return d}
+function send(){
+  if(window.Android&&busy){Android.stop();return}
+  if(timer){clearInterval(timer);timer=null;$("#send").textContent="Send";$("#send").classList.remove("stop");return}
+  const t=$("#inp").value.trim();if(!t)return;
+  $("#inp").value="";add("u",t);saveChat();
+  const rm=t.match(/^remember(?: that)?[:,\s]+(.+)/i);
+  if(rm){memAdd(rm[1]);add("a","Saved to memory: "+rm[1].trim().slice(0,200));saveChat();return}
+  if(!model){add("a","No model loaded. Open the Models tab and pick a .gguf file first.");return}
+  if(window.Android){nativeSend();return}
+  const words=("Preview reply from "+model.name+". Temperature "+S.temp+", up to "+S.maxt+" tokens, context "+S.ctx+", "+S.thr+" threads. In the installed app this text comes from the model running on your phone."+(S.memOn&&mem.length?" Using "+mem.length+" saved notes from memory.":"")).split(" ");
+  const d=add("a","");let i=0;$("#send").textContent="Stop";$("#send").classList.add("stop");
+  timer=setInterval(()=>{d.textContent+=(i?" ":"")+words[i++];d.scrollIntoView({block:"end"});
+    if(i>=words.length){clearInterval(timer);timer=null;saveChat();$("#send").textContent="Send";$("#send").classList.remove("stop")}},110);
+}
+$("#send").onclick=send;
+function saveChat(){if(!S.keep)return;try{localStorage.setItem("gi-chat",JSON.stringify([...log.querySelectorAll(".msg")].slice(-40).map(m=>[m.classList.contains("u")?"u":"a",m.textContent])))}catch(e){}}
+try{if(S.keep){JSON.parse(localStorage.getItem("gi-chat")||"[]").forEach(([c,x])=>add(c,x))}}catch(e){}
+$("#inp").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+$("#clear").onclick=()=>{log.innerHTML='<div class="empty" id="empty"><b>GI ready</b>Chat cleared. Ask anything.</div>';saveChat()};
+
+// native bridge (APK only)
+let busy=false,cur=null;
+const noteP=m=>{const p=document.createElement("p");p.className="note";p.style.marginTop="14px";p.textContent=m;const l=$("#list");l.innerHTML="";l.appendChild(p)};
+document.querySelector(".drop").addEventListener("click",e=>{if(window.Android){e.preventDefault();Android.pickModel(S.ctx,S.thr)}});
+window.onModelLoading=()=>{$("#pill").classList.remove("on");$("#pill").textContent="Loading…";noteP("Loading model. Large files can take a minute.")};
+window.onModelLoaded=(name,size)=>{model={name,size};$("#pill").textContent=name;$("#pill").classList.add("on");
+  $("#list").innerHTML='<div class="card"><div class="t"><b></b><small></small></div><span class="tag">Loaded</span></div>';
+  $("#list b").textContent=name;$("#list small").textContent=size>1.6e9?"Large for 4 GB RAM. Try a smaller quantization.":fmt(size)};
+window.onModelError=m=>{model=null;$("#pill").classList.remove("on");$("#pill").textContent="No model";noteP(m)};
+function nativeSend(){
+  let ms=[...log.querySelectorAll(".msg")].slice(-8).map(m=>({role:m.classList.contains("u")?"user":"assistant",content:m.textContent}));
+  while(ms.length&&ms[0].role!=="user")ms.shift();
+  let sys=S.sys;if(S.memOn&&mem.length)sys+="\nKnown about the user:\n- "+mem.slice(0,20).join("\n- ");
+  ms.unshift({role:"system",content:sys});
+  cur=add("a","");busy=true;$("#send").textContent="Stop";$("#send").classList.add("stop");
+  Android.generate(JSON.stringify({msgs:ms,temp:S.temp,max:S.maxt}));
+}
+window.onToken=t=>{if(cur){cur.textContent+=t;cur.scrollIntoView({block:"end"})}};
+window.onGenDone=err=>{busy=false;$("#send").textContent="Send";$("#send").classList.remove("stop");
+  if(cur&&err)cur.textContent+=(cur.textContent?"\n":"")+"Error: "+err;cur=null;saveChat()};
+</script>
+</body>
+</html>
