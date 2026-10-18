@@ -6,131 +6,154 @@
 <title>GI local AI</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Chakra+Petch:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#040b07;--panel:#0a1610;--panel2:#10231a;--line:#1b4030;--tx:#dcfce9;--mut:#7fb598;--c1:#2dff8a;--c2:#b6ff3d;--c3:#12b886;--ok:#2dff8a;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#eef7f1;--panel:#fff;--panel2:#dff0e6;--line:#aecdbb;--tx:#0a2016;--mut:#4a6b58;--c1:#0a8a4a;--c2:#5f8f00;--c3:#0b7a63;--ok:#0a8a4a}}
-:root[data-theme="light"]{--bg:#eef7f1;--panel:#fff;--panel2:#dff0e6;--line:#aecdbb;--tx:#0a2016;--mut:#4a6b58;--c1:#0a8a4a;--c2:#5f8f00;--c3:#0b7a63;--ok:#0a8a4a}
-:root[data-theme="dark"]{color-scheme:dark}
+:root{--bg:#040b07;--panel:#0a1610;--panel2:#10231a;--line:#1b4030;--tx:#dcfce9;--mut:#7fb598;--c1:#2dff8a;--c2:#b6ff3d;--c3:#12b886;--bad:#ff5d6c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="light"]{--bg:#eef7f1;--panel:#fff;--panel2:#dff0e6;--line:#aecdbb;--tx:#0a2016;--mut:#4a6b58;--c1:#0a8a4a;--c2:#5f8f00;--c3:#0b7a63}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
-body{background:var(--bg);color:var(--tx);font:500 15px/1.5 "Chakra Petch",system-ui,sans-serif;overflow:hidden}
-body::before{content:"";position:fixed;inset:0;background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 34px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/34px 100%;opacity:.22;pointer-events:none}
-body::after{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
-h1,h2,.orb{font-family:Orbitron,"Chakra Petch",sans-serif;letter-spacing:.06em}
-/* splash */
+body{background:radial-gradient(800px 460px at 85% -8%,color-mix(in srgb,var(--c3) 30%,transparent),transparent),radial-gradient(700px 500px at -10% 105%,color-mix(in srgb,var(--c1) 14%,transparent),transparent),var(--bg);color:var(--tx);font:500 15px/1.5 "Chakra Petch",system-ui,sans-serif;overflow:hidden}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+body::after{content:"";position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.12) 3px 4px);pointer-events:none;z-index:2;opacity:.5}
+h2,.orb{font-family:Orbitron,"Chakra Petch",sans-serif;letter-spacing:.06em}
 #splash{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#0f3a22,#030906 70%);color:#dcfce9;transition:opacity .6s}
 #splash.out{opacity:0;pointer-events:none}
 .stage{perspective:700px;height:190px;display:flex;align-items:center;justify-content:center}
 .cube{position:relative;transform-style:preserve-3d;animation:spin 5s linear infinite;width:200px;height:150px}
-.cube span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 118px/1 Orbitron,sans-serif;color:var(--c1)}
+.cube span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 118px/1 Orbitron,sans-serif}
 @keyframes spin{from{transform:rotateX(-12deg) rotateY(0)}to{transform:rotateX(-12deg) rotateY(360deg)}}
-.cube span:last-child{color:#fff;text-shadow:0 0 24px var(--c1),0 0 60px var(--c2)}
-.sname{font:600 17px Orbitron,sans-serif;letter-spacing:.38em;margin-top:34px;color:#dff4ff}
+.sname{font:600 17px Orbitron,sans-serif;letter-spacing:.38em;margin-top:34px}
 .bar{width:210px;height:4px;background:#0f2f20;margin-top:22px;overflow:hidden;border-radius:2px}
 .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2dff8a,#b6ff3d);animation:fill 3.2s ease-out forwards}
 @keyframes fill{to{width:100%}}
-.hint{margin-top:14px;font-size:12px;color:#7f97b8}
-/* shell */
-#app{position:relative;height:100%;display:flex;flex-direction:column}
-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--panel) 90%,transparent)}
-.logo{font:800 15px Orbitron;padding:4px 9px;border:1px solid var(--c1);color:var(--c1);box-shadow:0 0 12px color-mix(in srgb,var(--c1) 40%,transparent)}
-header h1{font-size:15px;flex:1}
-.pill{font-size:12px;padding:3px 10px;border:1px solid var(--line);border-radius:99px;color:var(--mut);max-width:44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pill.on{color:var(--ok);border-color:var(--ok)}
+.hint{margin-top:14px;font-size:12px;color:#7fb598}
+#app{position:relative;z-index:1;height:100%;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--panel) 82%,transparent)}
+.logo{font:800 14px Orbitron;padding:5px 9px;border-radius:10px;color:#031a0e;background:linear-gradient(135deg,var(--c2),var(--c1));box-shadow:0 0 14px color-mix(in srgb,var(--c1) 55%,transparent)}
+header b{font:800 14px Orbitron;flex:1;letter-spacing:.08em}
+.pill{font-size:12px;padding:3px 10px;border:1px solid var(--line);border-radius:99px;color:var(--mut);max-width:38%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill.on{color:var(--c1);border-color:var(--c1)}
+.ib{background:none;border:1px solid var(--line);color:var(--mut);width:36px;height:36px;border-radius:12px;display:grid;place-items:center;cursor:pointer;flex:none}
+.ib svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+.ib.armed{color:var(--bad);border-color:var(--bad)}
 main{flex:1;min-height:0;position:relative}
-section{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;padding:16px}
+section{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;padding:14px 14px 0}
 section.on{display:flex}
-nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--panel)}
-nav button{background:none;border:0;color:var(--mut);padding:12px 0 10px;font:600 12px "Chakra Petch";cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-top:2px solid transparent}
+nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:color-mix(in srgb,var(--panel) 88%,transparent)}
+nav button{background:none;border:0;color:var(--mut);padding:10px 0 9px;font:600 12px "Chakra Petch";cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-top:2px solid transparent}
 nav button.on{color:var(--c1);border-top-color:var(--c1)}
 nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
 button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--c1);outline-offset:2px}
-/* chat */
-#log{flex:1;display:flex;flex-direction:column;gap:12px;padding-bottom:8px}
-.msg{max-width:88%;padding:10px 14px;border:1px solid var(--line);background:var(--panel);clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));white-space:pre-wrap;overflow-wrap:anywhere}
-.msg.u{align-self:flex-end;background:var(--panel2);border-color:var(--c3)}
-.msg.a{align-self:flex-start;border-color:var(--c1)}
+#log{flex:1}
+.row{display:flex;gap:8px;margin-bottom:14px;animation:pop .25s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}}
+.row.u{justify-content:flex-end}
+.av{width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;font:800 11px Orbitron;color:#031a0e;background:linear-gradient(135deg,var(--c2),var(--c1));box-shadow:0 0 14px color-mix(in srgb,var(--c1) 50%,transparent)}
+.col{min-width:0;max-width:88%}
+.bub{padding:10px 15px;border-radius:20px;overflow-wrap:anywhere;white-space:pre-wrap;line-height:1.55}
+.u .bub{max-width:86%;background:linear-gradient(135deg,var(--c3),var(--c1));color:#031a0e;border-bottom-right-radius:6px;box-shadow:0 8px 22px -10px var(--c1)}
+.a .bub{background:color-mix(in srgb,var(--panel) 86%,transparent);border:1px solid color-mix(in srgb,var(--c1) 32%,transparent);border-bottom-left-radius:6px;box-shadow:0 8px 24px -14px var(--c1)}
+.bub pre{background:#02070a;color:#b9ffd6;padding:10px 12px;border-radius:12px;margin:6px 0;overflow-x:auto;white-space:pre;font:13px/1.45 ui-monospace,monospace}
+.bub code{font:13px ui-monospace,monospace;background:color-mix(in srgb,var(--c1) 14%,transparent);padding:1px 5px;border-radius:6px}
+.bub pre code{background:none;padding:0}
+.act{display:flex;gap:6px;align-items:center;margin:5px 4px 0;font-size:12px;color:var(--mut)}
+.act button{background:none;border:1px solid var(--line);color:var(--mut);border-radius:99px;padding:2px 11px;font:600 12px "Chakra Petch";cursor:pointer}
+.dots i{display:inline-block;width:6px;height:6px;margin-right:4px;border-radius:50%;background:var(--c1);animation:bl 1.1s infinite}
+.dots i:nth-child(2){animation-delay:.18s}.dots i:nth-child(3){animation-delay:.36s}
+@keyframes bl{0%,80%,100%{opacity:.2;transform:scale(.7)}40%{opacity:1;transform:scale(1.1)}}
 .empty{margin:auto;text-align:center;color:var(--mut);max-width:290px}
-.empty b{display:block;font:800 22px Orbitron;color:var(--c1);margin-bottom:8px}
-.composer{display:flex;gap:8px;padding-top:10px;position:sticky;bottom:-16px;background:var(--bg)}
-textarea,input[type=text],select{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--tx);font:500 15px "Chakra Petch";padding:10px 12px;border-radius:0}
-textarea{resize:none;height:46px}
-.btn{background:linear-gradient(135deg,var(--c1),var(--c3));color:#031018;border:0;font:700 14px "Chakra Petch";padding:0 18px;min-height:46px;cursor:pointer;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.empty b{display:block;font:800 24px Orbitron;color:var(--c1);margin-bottom:8px;text-shadow:0 0 20px var(--c1)}
+.dock{position:sticky;bottom:0;padding:8px 0 10px;background:linear-gradient(transparent,var(--bg) 28%)}
+#stat{display:none;font-size:12px;color:var(--c1);margin:0 6px 6px}
+#chip{display:none;align-items:center;gap:8px;margin:0 0 8px;padding:6px 12px;border:1px solid var(--c1);border-radius:99px;font-size:13px;width:fit-content;max-width:100%}
+#chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#chip button{background:none;border:0;color:var(--bad);font-size:15px;cursor:pointer}
+.cmp{display:flex;gap:8px;align-items:flex-end;background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--line);border-radius:26px;padding:5px}
+.cmp:focus-within{border-color:var(--c1);box-shadow:0 0 18px -6px var(--c1)}
+.plus{width:40px;height:40px;border-radius:50%;border:0;background:var(--panel2);color:var(--c1);font-size:24px;cursor:pointer;flex:none}
+.cmp textarea{flex:1;background:none;border:0;color:var(--tx);font:500 15px "Chakra Petch";padding:9px 4px;resize:none;height:40px;max-height:120px}
+.cmp textarea:focus-visible{outline:none}
+.send{height:40px;min-width:68px;border-radius:20px;border:0;background:linear-gradient(135deg,var(--c3),var(--c1));color:#031a0e;font:700 14px "Chakra Petch";cursor:pointer;padding:0 16px;flex:none}
+.send.stop{background:var(--bad);color:#fff}
+#sheet{display:none;position:absolute;left:0;bottom:62px;background:var(--panel);border:1px solid var(--c1);border-radius:18px;padding:6px;z-index:5;box-shadow:0 12px 30px #000a;min-width:220px}
+#sheet button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--tx);font:500 15px "Chakra Petch";padding:10px 14px;border-radius:12px;cursor:pointer}
+#sheet button:active{background:var(--panel2)}
+.btn{background:linear-gradient(135deg,var(--c3),var(--c1));color:#031a0e;border:0;font:700 14px "Chakra Petch";padding:0 18px;min-height:44px;border-radius:14px;cursor:pointer}
 .btn.ghost{background:var(--panel2);color:var(--tx);border:1px solid var(--line)}
-.btn.stop{background:var(--c2);color:#fff}
-/* models */
-.drop{border:1px dashed var(--c1);padding:26px 16px;text-align:center;background:color-mix(in srgb,var(--c1) 6%,transparent);cursor:pointer;display:block}
+.btn.sm{min-height:34px;padding:0 14px;border-radius:12px;font-size:13px}
+.drop{border:1px dashed var(--c1);border-radius:18px;padding:24px 16px;text-align:center;background:color-mix(in srgb,var(--c1) 7%,transparent);cursor:pointer;display:block}
 .drop strong{display:block;font:800 16px Orbitron;color:var(--c1);margin-bottom:4px}
-.card{border:1px solid var(--line);background:var(--panel);padding:12px 14px;margin-top:12px;display:flex;align-items:center;gap:10px}
-.card .t{flex:1;min-width:0}
-.card .t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.card small{color:var(--mut)}
-.tag{font-size:11px;padding:2px 8px;border:1px solid var(--ok);color:var(--ok)}
+.card{border:1px solid var(--line);border-radius:16px;background:color-mix(in srgb,var(--panel) 88%,transparent);padding:12px 14px;margin-top:10px;display:flex;align-items:center;gap:8px}
+.card .t{flex:1;min-width:0}.card b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card small,.note{color:var(--mut);font-size:13px}
 h2{font-size:14px;margin:20px 0 6px;color:var(--c1)}
-.note{color:var(--mut);font-size:13px}
-/* settings */
-.row{margin-top:14px}
-.row label{display:flex;justify-content:space-between;margin-bottom:6px}
-.row label span{color:var(--c1);font-family:Orbitron;font-size:13px}
+textarea.f,select,input[type=text]{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--tx);font:500 15px "Chakra Petch";padding:10px 12px;border-radius:12px}
+.row2{margin-top:14px}.row2 label{display:flex;justify-content:space-between;margin-bottom:6px}.row2 label span{color:var(--c1);font-family:Orbitron;font-size:13px}
 input[type=range]{width:100%;accent-color:var(--c1)}
-.dev{border:1px solid var(--line);background:var(--panel);padding:12px 14px;font-size:13px;color:var(--mut);margin-top:16px}
 .sw{display:flex;justify-content:space-between;align-items:center}.sw input{width:22px;height:22px;accent-color:var(--c1)}
-.card .x{min-height:34px;padding:0 12px;flex:none}.card .t span{white-space:normal;overflow-wrap:anywhere}
-@media (prefers-reduced-motion:reduce){.cube{animation:none;transform:rotateX(-12deg) rotateY(-24deg)}.bar i{animation-duration:.01s}}
+.sp{height:16px;flex:none}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--c1);padding:8px 16px;border-radius:99px;font-size:13px;z-index:60;display:none}
+@media (prefers-reduced-motion:reduce){.cube{animation:none;transform:rotateX(-12deg) rotateY(-24deg)}.bar i{animation-duration:.01s}.row{animation:none}}
 </style>
 </head>
 <body>
+<canvas id="bg"></canvas>
 <div id="splash" role="button" tabindex="0" aria-label="Skip intro">
   <div class="stage"><div class="cube" id="cube"></div></div>
-  <div class="sname">LOCAL AI</div>
-  <div class="bar"><i></i></div>
+  <div class="sname">LOCAL AI</div><div class="bar"><i></i></div>
   <div class="hint">Starting offline engine… tap to skip</div>
 </div>
-
 <div id="app">
   <header>
-    <div class="logo">GI</div><h1>GI local AI</h1>
-    <div class="pill" id="pill">No model</div>
+    <div class="logo">GI</div><b>LOCAL AI</b><div class="pill" id="pill">No model</div>
+    <button class="ib" id="trash" aria-label="Clear chat"><svg viewBox="0 0 24 24"><path d="M4 7h16 M9 7V4h6v3 M6 7l1 13h10l1-13"/></svg></button>
   </header>
   <main>
     <section id="chat" class="on">
-      <div id="log"><div class="empty" id="empty"><b>GI ready</b>Load a .gguf model in the Models tab, then ask anything. Everything runs on this phone, offline.</div></div>
-      <div class="composer">
-        <textarea id="inp" rows="1" placeholder="Type a message" aria-label="Message"></textarea>
-        <button class="btn" id="send">Send</button>
+      <div id="log"></div>
+      <input type="file" id="att" hidden accept=".txt,.md,.json,.csv,.log,.js,.py,.html,.css,.xml,.yml,.kt,.java,.c,.cpp,.srt,text/*">
+      <div class="dock">
+        <div id="stat"></div>
+        <div id="chip"><span id="chipn"></span><button id="chipx" aria-label="Remove file">✕</button></div>
+        <div id="sheet">
+          <button data-q="@file">📎  Attach text file</button>
+          <button data-q="Summarize this in a few bullet points.">📝  Summarize</button>
+          <button data-q="Translate this to Burmese:">🌐  Translate to Burmese</button>
+          <button data-q="Explain this in simple words:">💡  Explain simply</button>
+          <button data-q="Find and fix the bug in this code:">🛠  Fix code</button>
+        </div>
+        <div class="cmp"><button class="plus" id="plus" aria-label="More">+</button><textarea id="inp" rows="1" placeholder="Message GI" aria-label="Message"></textarea><button class="send" id="send">Send</button></div>
       </div>
     </section>
-
     <section id="models">
-      <label class="drop" for="file"><strong>Load GGUF model</strong>Tap to pick a .gguf file from storage<input id="file" type="file" accept=".gguf,application/octet-stream" hidden></label>
-      <div id="list"><p class="note" style="margin-top:14px">No models loaded yet.</p></div>
+      <label class="drop" for="file"><strong>Add GGUF model</strong>Tap to pick a .gguf file<input id="file" type="file" accept=".gguf,application/octet-stream" hidden></label>
+      <p class="note" id="mnote" style="margin-top:10px"></p>
+      <h2>My models</h2><div id="list"></div>
       <h2>Tips for 4 GB RAM</h2>
-      <p class="note">Use 1B–1.5B models in Q4 quantization (file under about 1.2 GB). Keep context at 1024 or lower. Close other apps before loading.</p>
+      <p class="note">Use 1B–1.5B models in Q4 (under about 1.2 GB). Keep context at 1024 or lower. Close other apps before loading.</p><div class="sp"></div>
     </section>
-
     <section id="memory">
       <h2 style="margin-top:0">AI memory</h2>
       <p class="note">Notes GI keeps between chats. Stored on this phone only.</p>
-      <div class="row sw"><label for="memOn" style="margin:0">Use memory in replies</label><input type="checkbox" id="memOn"></div>
-      <div class="row sw"><label for="keep" style="margin:0">Keep chat history</label><input type="checkbox" id="keep"></div>
-      <div class="composer" style="position:static;margin-top:14px"><input type="text" id="memIn" placeholder="e.g. My name is Aung" aria-label="New memory note"><button class="btn" id="memAdd">Save</button></div>
+      <div class="row2 sw"><label for="memOn" style="margin:0">Use memory in replies</label><input type="checkbox" id="memOn"></div>
+      <div class="row2 sw"><label for="keep" style="margin:0">Keep chat history</label><input type="checkbox" id="keep"></div>
+      <div style="display:flex;gap:8px;margin-top:14px"><input type="text" id="memIn" placeholder="e.g. My name is Aung" aria-label="New memory note"><button class="btn" id="memAdd">Save</button></div>
       <div id="memList"></div>
       <button class="btn ghost" id="memClear" style="margin-top:14px">Clear all memory</button>
-      <p class="note" style="margin-top:12px">Tip: in chat, type “remember …” to save a note.</p>
+      <p class="note" style="margin-top:12px">Tip: in chat, type “remember …” to save a note.</p><div class="sp"></div>
     </section>
-
     <section id="settings">
       <h2 style="margin-top:0">Generation</h2>
-      <div class="row"><label>Temperature <span id="vT"></span></label><input type="range" id="temp" min="0" max="2" step="0.05"></div>
-      <div class="row"><label>Max new tokens <span id="vM"></span></label><input type="range" id="maxt" min="32" max="1024" step="32"></div>
-      <div class="row"><label>Context size <span id="vC"></span></label><input type="range" id="ctx" min="256" max="2048" step="256"></div>
-      <div class="row"><label>CPU threads <span id="vH"></span></label><input type="range" id="thr" min="1" max="8" step="1"></div>
+      <div class="row2"><label>Temperature <span id="vT"></span></label><input type="range" id="temp" min="0" max="2" step="0.05"></div>
+      <div class="row2"><label>Max new tokens <span id="vM"></span></label><input type="range" id="maxt" min="32" max="1024" step="32"></div>
+      <div class="row2"><label>Context size <span id="vC"></span></label><input type="range" id="ctx" min="256" max="2048" step="256"></div>
+      <div class="row2"><label>CPU threads <span id="vH"></span></label><input type="range" id="thr" min="1" max="8" step="1"></div>
+      <p class="note" style="margin-top:8px">Context size and threads apply the next time you load a model.</p>
       <h2>Assistant</h2>
-      <div class="row"><label for="sys">System prompt</label><textarea id="sys" style="height:84px"></textarea></div>
+      <div class="row2"><label for="persona">Persona</label><select id="persona"></select></div>
+      <div class="row2"><label for="sys">System prompt</label><textarea class="f" id="sys" style="height:84px"></textarea></div>
       <h2>App</h2>
-      <div class="row"><label for="theme">Theme</label><select id="theme"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select></div>
-      <div class="row" style="display:flex;gap:8px"><button class="btn ghost" id="clear" style="flex:1">Clear chat</button><button class="btn ghost" id="reset" style="flex:1">Reset settings</button></div>
-      <div class="dev">Runs fully offline with llama.cpp (armeabi-v7a). Nothing leaves this phone.</div>
+      <div class="row2"><label for="theme">Theme</label><select id="theme"><option value="dark">Dark</option><option value="light">Light</option></select></div>
+      <div class="row2" style="display:flex;gap:8px"><button class="btn ghost" id="export" style="flex:1">Export chat</button><button class="btn ghost" id="reset" style="flex:1">Reset settings</button></div>
+      <p class="note" style="margin-top:14px">GI local AI 1.1 · runs fully offline with llama.cpp. Nothing leaves this phone.</p><div class="sp"></div>
     </section>
   </main>
   <nav>
@@ -140,15 +163,20 @@ input[type=range]{width:100%;accent-color:var(--c1)}
     <button data-t="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10 M18 7h2 M4 17h2 M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Settings</button>
   </nav>
 </div>
-
+<div id="toast"></div>
 <script>
-const $=s=>document.querySelector(s);
-const DEF={temp:0.7,maxt:256,ctx:1024,thr:4,sys:"You are GI, a helpful offline assistant. Answer clearly and briefly.",theme:"auto",memOn:true,keep:true};
-let S={...DEF};
-try{Object.assign(S,JSON.parse(localStorage.getItem("gi-settings")||"{}"))}catch(e){}
-const save=()=>{try{localStorage.setItem("gi-settings",JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const RD=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
+const WR=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const PERS={"Assistant":"You are GI, a helpful offline assistant. Answer clearly and briefly.","Burmese tutor":"You are GI. Always answer in Burmese (Myanmar language) unless asked otherwise. Keep answers clear and simple.","Coder":"You are GI, an expert programmer. Give short, correct code with brief explanations.","Translator":"You are GI, a translator. Translate the user's text between Burmese and English. Output only the translation."};
+const DEF={temp:.7,maxt:256,ctx:1024,thr:4,persona:"Assistant",sys:PERS.Assistant,theme:"dark",memOn:true,keep:true};
+let S={...DEF,...RD("gi-settings",{})},mem=RD("gi-mem",[]),lib=RD("gi-lib",[]);
+let model=null,busy=false,cur=null,att=null,t0=0,nTok=0,timer=null;
+const NAT=!!window.Android,save=()=>WR("gi-settings",S);
+const fmt=b=>b>1e9?(b/1e9).toFixed(2)+" GB":(b/1e6).toFixed(0)+" MB";
+function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display="none",1800)}
 
-// 3D GI logo: stacked layers give depth
+// splash
 const cube=$("#cube");
 for(let i=-9;i<=9;i++){const s=document.createElement("span");s.textContent="GI";s.style.transform="translateZ("+(i*2.4)+"px)";s.style.opacity=i===9?1:.55;s.style.color=i<0?"#12b886":"#2dff8a";cube.appendChild(s)}
 cube.lastChild.style.color="#fff";cube.lastChild.style.textShadow="0 0 24px #2dff8a,0 0 60px #b6ff3d";
@@ -156,95 +184,135 @@ const splash=$("#splash");let gone=false;
 const hide=()=>{if(gone)return;gone=true;splash.classList.add("out");setTimeout(()=>splash.remove(),700)};
 splash.addEventListener("click",hide);splash.addEventListener("keydown",hide);setTimeout(hide,3600);
 
-// theme
-function theme(){const r=document.documentElement;S.theme==="auto"?r.removeAttribute("data-theme"):r.setAttribute("data-theme",S.theme)}
-// tabs
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll("nav button,section").forEach(x=>x.classList.remove("on"));
-  b.classList.add("on");$("#"+b.dataset.t).classList.add("on")});
+// animated network background
+const cv=$("#bg"),g=cv.getContext("2d");let W,H,P=[],last=0;
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;P=Array.from({length:26},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4}))}
+function fr(t){requestAnimationFrame(fr);if(document.hidden||t-last<33)return;last=t;g.clearRect(0,0,W,H);
+ for(const p of P){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1}
+ g.strokeStyle="#2dff8a";g.fillStyle="#b6ff3d";
+ for(let i=0;i<P.length;i++){for(let j=i+1;j<P.length;j++){const d=Math.hypot(P[i].x-P[j].x,P[i].y-P[j].y);if(d<150){g.globalAlpha=(1-d/150)*.28;g.beginPath();g.moveTo(P[i].x,P[i].y);g.lineTo(P[j].x,P[j].y);g.stroke()}}
+  g.globalAlpha=.6;g.beginPath();g.arc(P[i].x,P[i].y,2,0,7);g.fill()}}
+rs();addEventListener("resize",rs);requestAnimationFrame(fr);
 
-// settings
+// tabs + settings
+$$("nav button").forEach(b=>b.onclick=()=>{$$("nav button,section").forEach(x=>x.classList.remove("on"));b.classList.add("on");$("#"+b.dataset.t).classList.add("on")});
 const map={temp:["vT",v=>(+v).toFixed(2)],maxt:["vM",v=>v],ctx:["vC",v=>v],thr:["vH",v=>v]};
-function paint(){for(const k in map){$("#"+k).value=S[k];$("#"+map[k][0]).textContent=map[k][1](S[k])}$("#sys").value=S.sys;$("#theme").value=S.theme;$("#memOn").checked=S.memOn;$("#keep").checked=S.keep;theme()}
+$("#persona").innerHTML=Object.keys(PERS).map(k=>"<option>"+k+"</option>").join("")+"<option>Custom</option>";
+function paint(){for(const k in map){$("#"+k).value=S[k];$("#"+map[k][0]).textContent=map[k][1](S[k])}
+ $("#sys").value=S.sys;$("#theme").value=S.theme;$("#persona").value=S.persona;$("#memOn").checked=S.memOn;$("#keep").checked=S.keep;document.documentElement.dataset.theme=S.theme}
 for(const k in map)$("#"+k).oninput=e=>{S[k]=+e.target.value;paint();save()};
-$("#sys").oninput=e=>{S.sys=e.target.value;save()};
-$("#theme").onchange=e=>{S.theme=e.target.value;theme();save()};
-$("#reset").onclick=()=>{S={...DEF};paint();save()};
+$("#persona").onchange=e=>{S.persona=e.target.value;if(PERS[S.persona])S.sys=PERS[S.persona];paint();save()};
+$("#sys").oninput=e=>{S.sys=e.target.value;S.persona="Custom";$("#persona").value="Custom";save()};
+$("#theme").onchange=e=>{S.theme=e.target.value;paint();save()};
+$("#reset").onclick=()=>{S={...DEF};paint();save();toast("Settings reset")};
+$("#memOn").onchange=e=>{S.memOn=e.target.checked;save()};
+$("#keep").onchange=e=>{S.keep=e.target.checked;save();if(S.keep)persist();else WR("gi-chat",[])};
 paint();
 
-// models
-let model=null;
-const fmt=b=>b>1e9?(b/1e9).toFixed(2)+" GB":(b/1e6).toFixed(0)+" MB";
-$("#file").onchange=e=>{
-  const f=e.target.files[0];if(!f)return;
-  if(!/\.gguf$/i.test(f.name)){$("#list").innerHTML='<p class="note" style="margin-top:14px">That file is not a .gguf model. Pick a file ending in .gguf.</p>';return}
-  model=f;$("#pill").textContent=f.name;$("#pill").classList.add("on");
-  const warn=f.size>1.6e9?'<small>Large for 4 GB RAM. Try a smaller quantization.</small>':'<small>'+fmt(f.size)+'</small>';
-  $("#list").innerHTML='<div class="card"><div class="t"><b></b>'+warn+'</div><span class="tag">Loaded</span></div>';
-  $("#list b").textContent=f.name;
-};
-
 // memory
-let mem=[];try{mem=JSON.parse(localStorage.getItem("gi-mem")||"[]")}catch(e){}
-const saveMem=()=>{try{localStorage.setItem("gi-mem",JSON.stringify(mem))}catch(e){}};
+const saveMem=()=>WR("gi-mem",mem);
 function memRender(){const l=$("#memList");l.innerHTML="";
-  if(!mem.length){l.innerHTML='<p class="note" style="margin-top:14px">No memory yet. Add a note above, or type “remember …” in chat.</p>';return}
-  mem.forEach((m,i)=>{const c=document.createElement("div");c.className="card";
-    const t=document.createElement("div");t.className="t";const sp=document.createElement("span");sp.textContent=m;t.appendChild(sp);
-    const b=document.createElement("button");b.className="btn ghost x";b.textContent="Delete";
-    b.onclick=()=>{mem.splice(i,1);saveMem();memRender()};
-    c.append(t,b);l.appendChild(c)})}
+ if(!mem.length){l.innerHTML='<p class="note" style="margin-top:14px">No memory yet. Add a note above, or type “remember …” in chat.</p>';return}
+ mem.forEach((m,i)=>{const c=document.createElement("div");c.className="card";const t=document.createElement("div");t.className="t";t.style.whiteSpace="normal";t.textContent=m;
+  const b=document.createElement("button");b.className="btn ghost sm";b.textContent="Delete";b.onclick=()=>{mem.splice(i,1);saveMem();memRender()};c.append(t,b);l.appendChild(c)})}
 function memAdd(x){x=x.trim().slice(0,200);if(!x)return false;mem.unshift(x);mem=mem.slice(0,50);saveMem();memRender();return true}
 $("#memAdd").onclick=()=>{if(memAdd($("#memIn").value))$("#memIn").value=""};
 $("#memIn").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#memAdd").click()}});
 $("#memClear").onclick=()=>{mem=[];saveMem();memRender()};
-$("#memOn").onchange=e=>{S.memOn=e.target.checked;save()};
-$("#keep").onchange=e=>{S.keep=e.target.checked;save();if(!S.keep){try{localStorage.removeItem("gi-chat")}catch(x){}}else saveChat()};
 memRender();
 
-// chat (simulated)
-const log=$("#log");let timer=null;
-function add(cls,txt){$("#empty")&&$("#empty").remove();const d=document.createElement("div");d.className="msg "+cls;d.textContent=txt;log.appendChild(d);d.scrollIntoView({block:"end"});return d}
-function send(){
-  if(window.Android&&busy){Android.stop();return}
-  if(timer){clearInterval(timer);timer=null;$("#send").textContent="Send";$("#send").classList.remove("stop");return}
-  const t=$("#inp").value.trim();if(!t)return;
-  $("#inp").value="";add("u",t);saveChat();
-  const rm=t.match(/^remember(?: that)?[:,\s]+(.+)/i);
-  if(rm){memAdd(rm[1]);add("a","Saved to memory: "+rm[1].trim().slice(0,200));saveChat();return}
-  if(!model){add("a","No model loaded. Open the Models tab and pick a .gguf file first.");return}
-  if(window.Android){nativeSend();return}
-  const words=("Preview reply from "+model.name+". Temperature "+S.temp+", up to "+S.maxt+" tokens, context "+S.ctx+", "+S.thr+" threads. In the installed app this text comes from the model running on your phone."+(S.memOn&&mem.length?" Using "+mem.length+" saved notes from memory.":"")).split(" ");
-  const d=add("a","");let i=0;$("#send").textContent="Stop";$("#send").classList.add("stop");
-  timer=setInterval(()=>{d.textContent+=(i?" ":"")+words[i++];d.scrollIntoView({block:"end"});
-    if(i>=words.length){clearInterval(timer);timer=null;saveChat();$("#send").textContent="Send";$("#send").classList.remove("stop")}},110);
-}
-$("#send").onclick=send;
-function saveChat(){if(!S.keep)return;try{localStorage.setItem("gi-chat",JSON.stringify([...log.querySelectorAll(".msg")].slice(-40).map(m=>[m.classList.contains("u")?"u":"a",m.textContent])))}catch(e){}}
-try{if(S.keep){JSON.parse(localStorage.getItem("gi-chat")||"[]").forEach(([c,x])=>add(c,x))}}catch(e){}
-$("#inp").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
-$("#clear").onclick=()=>{log.innerHTML='<div class="empty" id="empty"><b>GI ready</b>Chat cleared. Ask anything.</div>';saveChat()};
+// models
+const setPill=(t,on)=>{$("#pill").textContent=t;$("#pill").classList.toggle("on",!!on)};
+function renderLib(){const l=$("#list");l.innerHTML="";
+ if(!lib.length){l.innerHTML='<p class="note" style="margin-top:6px">No models yet. Add a .gguf file above.</p>';return}
+ lib.forEach((m,i)=>{const c=document.createElement("div");c.className="card";c.innerHTML='<div class="t"><b></b><small></small></div>';
+  c.querySelector("b").textContent=m.name;c.querySelector("small").textContent=fmt(m.size)+(m.size>1.6e9?" · large for 4 GB RAM":"");
+  const on=model&&model.name===m.name,a=document.createElement("button");a.className="btn sm"+(on?" ghost":"");a.textContent=on?"Active":"Load";a.onclick=()=>{if(!on)loadLib(i)};
+  const d=document.createElement("button");d.className="btn ghost sm";d.textContent="✕";d.setAttribute("aria-label","Remove");d.onclick=()=>{lib.splice(i,1);WR("gi-lib",lib);renderLib()};
+  c.append(a,d);l.appendChild(c)})}
+function loadLib(i){const m=lib[i];if(NAT){if(!m.uri){toast("Pick this file again");return}Android.loadModel(m.uri,S.ctx,S.thr)}else{model=m;setPill(m.name,1);renderLib()}}
+$(".drop").addEventListener("click",e=>{if(NAT){e.preventDefault();Android.pickModel(S.ctx,S.thr)}});
+$("#file").onchange=e=>{const f=e.target.files[0];if(!f)return;if(!/\.gguf$/i.test(f.name)){$("#mnote").textContent="That file is not a .gguf model.";return}
+ $("#mnote").textContent="";lib=lib.filter(x=>x.name!==f.name);lib.unshift({name:f.name,size:f.size,uri:null});WR("gi-lib",lib);model=lib[0];setPill(f.name,1);renderLib()};
+window.onModelLoading=()=>{setPill("Loading…",0);$("#mnote").textContent="Loading model. Large files can take a minute."};
+window.onModelLoaded=(name,size,uri)=>{model={name,size,uri};setPill(name,1);$("#mnote").textContent="";
+ lib=lib.filter(x=>x.name!==name);lib.unshift({name,size,uri});lib=lib.slice(0,12);WR("gi-lib",lib);renderLib()};
+window.onModelError=m=>{model=null;setPill("No model",0);$("#mnote").textContent=m;renderLib()};
+renderLib();
 
-// native bridge (APK only)
-let busy=false,cur=null;
-const noteP=m=>{const p=document.createElement("p");p.className="note";p.style.marginTop="14px";p.textContent=m;const l=$("#list");l.innerHTML="";l.appendChild(p)};
-document.querySelector(".drop").addEventListener("click",e=>{if(window.Android){e.preventDefault();Android.pickModel(S.ctx,S.thr)}});
-window.onModelLoading=()=>{$("#pill").classList.remove("on");$("#pill").textContent="Loading…";noteP("Loading model. Large files can take a minute.")};
-window.onModelLoaded=(name,size)=>{model={name,size};$("#pill").textContent=name;$("#pill").classList.add("on");
-  $("#list").innerHTML='<div class="card"><div class="t"><b></b><small></small></div><span class="tag">Loaded</span></div>';
-  $("#list b").textContent=name;$("#list small").textContent=size>1.6e9?"Large for 4 GB RAM. Try a smaller quantization.":fmt(size)};
-window.onModelError=m=>{model=null;$("#pill").classList.remove("on");$("#pill").textContent="No model";noteP(m)};
-function nativeSend(){
-  let ms=[...log.querySelectorAll(".msg")].slice(-8).map(m=>({role:m.classList.contains("u")?"user":"assistant",content:m.textContent}));
-  while(ms.length&&ms[0].role!=="user")ms.shift();
-  let sys=S.sys;if(S.memOn&&mem.length)sys+="\nKnown about the user:\n- "+mem.slice(0,20).join("\n- ");
-  ms.unshift({role:"system",content:sys});
-  cur=add("a","");busy=true;$("#send").textContent="Stop";$("#send").classList.add("stop");
-  Android.generate(JSON.stringify({msgs:ms,temp:S.temp,max:S.maxt}));
-}
-window.onToken=t=>{if(cur){cur.textContent+=t;cur.scrollIntoView({block:"end"})}};
-window.onGenDone=err=>{busy=false;$("#send").textContent="Send";$("#send").classList.remove("stop");
-  if(cur&&err)cur.textContent+=(cur.textContent?"\n":"")+"Error: "+err;cur=null;saveChat()};
+// chat rendering
+const log=$("#log"),EMPTY='<div class="empty"><b>GI ready</b>Add a .gguf model in the Models tab, then ask anything. Everything runs on this phone, offline.</div>';
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function md(s){return s.split("```").map((p,i)=>i%2?"<pre><code>"+esc(p.replace(/^[\w+-]*\n/,""))+"</code></pre>":esc(p).replace(/`([^`\n]+)`/g,"<code>$1</code>").replace(/\*\*([^*\n]+)\*\*/g,"<b>$1</b>")).join("")}
+const bottom=()=>{$("#chat").scrollTop=1e9};
+function draw(r){r.bub.innerHTML=r._raw?md(r._raw):(busy&&r===cur?'<span class="dots"><i></i><i></i><i></i></span> Writing':"")}
+function mkRow(role,raw){const e=log.querySelector(".empty");if(e)e.remove();
+ const r=document.createElement("div");r.className="row "+role;
+ r.innerHTML=role==="a"?'<div class="av">GI</div><div class="col"><div class="bub"></div><div class="act"><button data-a="copy">Copy</button><button data-a="redo">Retry</button><span class="meta"></span></div></div>':'<div class="bub"></div>';
+ r.bub=r.querySelector(".bub");r._raw=raw;draw(r);log.appendChild(r);bottom();return r}
+function persist(){if(!S.keep)return;WR("gi-chat",$$("#log .row").slice(-40).map(r=>[r.classList.contains("u")?"u":"a",r._raw]))}
+log.innerHTML=EMPTY;
+if(S.keep)RD("gi-chat",[]).forEach(([c,x])=>mkRow(c,x));
+function copyText(t){if(NAT)Android.copy(t);else if(navigator.clipboard)navigator.clipboard.writeText(t);toast("Copied")}
+log.addEventListener("click",e=>{const b=e.target.closest("button[data-a]");if(!b)return;const r=b.closest(".row");
+ if(b.dataset.a==="copy")copyText(r._raw);else regen(r)});
+function ui(on){busy=on;const s=$("#send");s.textContent=on?"Stop":"Send";s.classList.toggle("stop",on);$("#stat").style.display=on?"block":"none";if(on)$("#stat").textContent="✍️ Writing…"}
+
+// generation
+function buildMsgs(){
+ let sys=S.sys;if(S.memOn&&mem.length)sys+="\nKnown about the user:\n- "+mem.slice(0,20).join("\n- ");
+ const rows=$$("#log .row").slice(-10);
+ let ms=rows.map((r,i)=>({role:r.classList.contains("u")?"user":"assistant",content:i===rows.length-1?(r._full||r._raw):r._raw}));
+ const lim=Math.max(300,(S.ctx-S.maxt-80)*2-sys.length);let tot=ms.reduce((a,m)=>a+m.content.length,0);
+ while(tot>lim&&ms.length>1){tot-=ms[0].content.length;ms.shift()}
+ const l=ms[ms.length-1];if(l.content.length>lim)l.content=l.content.slice(0,lim);
+ while(ms.length&&ms[0].role!=="user")ms.shift();
+ return [{role:"system",content:sys},...ms]}
+function gen(){const ms=buildMsgs();ui(true);cur=mkRow("a","");t0=performance.now();nTok=0;
+ if(NAT)Android.generate(JSON.stringify({msgs:ms,temp:S.temp,max:S.maxt}));else sim()}
+function sim(){const w=("Preview reply from "+model.name+". Real replies come from the model running on your phone.").split(" ");let i=0;
+ timer=setInterval(()=>{onToken((i?" ":"")+w[i++]);if(i>=w.length){clearInterval(timer);timer=null;onGenDone("")}},120)}
+window.onToken=t=>{if(!cur)return;cur._raw+=t;nTok++;
+ if(!cur._q)cur._q=requestAnimationFrame(()=>{cur._q=0;draw(cur);bottom();$("#stat").textContent="✍️ Writing… "+(nTok/((performance.now()-t0)/1000)).toFixed(1)+" tok/s"})};
+window.onGenDone=err=>{const r=cur;cur=null;ui(false);if(!r)return;
+ if(err)r._raw+=(r._raw?"\n\n":"")+"⚠️ "+err;draw(r);
+ if(nTok)r.querySelector(".meta").textContent=(nTok/((performance.now()-t0)/1000)).toFixed(1)+" tok/s · "+nTok+" tokens";persist()};
+function stopGen(){if(NAT)Android.stop();else if(timer){clearInterval(timer);timer=null;onGenDone("")}}
+function regen(r){if(busy)return;const rows=$$("#log .row");if(r!==rows[rows.length-1]||!r.classList.contains("a")){toast("Retry works on the last reply");return}
+ if(!model){toast("Load a model first");return}r.remove();gen()}
+function send(){
+ if(busy){stopGen();return}
+ const t=$("#inp").value.trim();if(!t&&!att)return;
+ $("#inp").value="";$("#inp").style.height="40px";$("#sheet").style.display="none";
+ const rm=t.match(/^remember(?: that)?[:,\s]+(.+)/i);
+ if(rm&&!att){mkRow("u",t);memAdd(rm[1]);mkRow("a","Saved to memory: "+rm[1].trim().slice(0,200));persist();return}
+ let raw=t,full=null;
+ if(att){raw="📎 "+att.name+(att.trunc?" (trimmed)":"")+(t?"\n"+t:"");full="File: "+att.name+"\n```\n"+att.text+"\n```\n\n"+(t||"Summarize this file.");att=null;chip()}
+ const u=mkRow("u",raw);u._full=full;
+ if(!model){mkRow("a","No model loaded. Open the Models tab and add a .gguf file first.");persist();return}
+ gen()}
+$("#send").onclick=send;
+$("#inp").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+$("#inp").addEventListener("input",e=>{e.target.style.height="40px";e.target.style.height=Math.min(120,e.target.scrollHeight)+"px"});
+
+// + sheet, attachments
+$("#plus").onclick=()=>{const s=$("#sheet");s.style.display=s.style.display==="block"?"none":"block"};
+$$("#sheet button").forEach(b=>b.onclick=()=>{$("#sheet").style.display="none";const q=b.dataset.q;if(q==="@file")$("#att").click();else{$("#inp").value=q+" ";$("#inp").focus()}});
+function chip(){$("#chip").style.display=att?"flex":"none";if(att)$("#chipn").textContent="📎 "+att.name}
+$("#chipx").onclick=()=>{att=null;chip()};
+$("#att").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
+ if(f.size>2e6){toast("File too big (max 2 MB)");return}
+ let x;try{x=await f.text()}catch(_){toast("Could not read file");return}
+ if(x.slice(0,2000).indexOf("\u0000")>=0){toast("Only text files are supported");return}
+ const max=Math.max(500,Math.floor((S.ctx-S.maxt-300)*2));att={name:f.name,text:x.slice(0,max),trunc:x.length>max};chip();
+ if(att.trunc)toast("File trimmed to fit the context size")};
+
+// clear / export
+let armed=0;$("#trash").onclick=()=>{const b=$("#trash");
+ if(!armed){armed=setTimeout(()=>{armed=0;b.classList.remove("armed")},3000);b.classList.add("armed");toast("Tap again to clear chat");return}
+ clearTimeout(armed);armed=0;b.classList.remove("armed");if(busy)stopGen();log.innerHTML=EMPTY;WR("gi-chat",[]);toast("Chat cleared")};
+$("#export").onclick=()=>{const t=$$("#log .row").map(r=>(r.classList.contains("u")?"You: ":"GI: ")+r._raw).join("\n\n");
+ if(!t){toast("Nothing to export");return}if(NAT)Android.share(t);else copyText(t)};
 </script>
 </body>
 </html>
