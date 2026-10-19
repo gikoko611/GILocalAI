@@ -127,6 +127,9 @@ input[type=range]{width:100%;accent-color:var(--c1)}
       <label class="drop" for="file"><strong>Add GGUF model</strong>Tap to pick a .gguf file<input id="file" type="file" accept=".gguf,application/octet-stream" hidden></label>
       <p class="note" id="mnote" style="margin-top:10px"></p>
       <h2>My models</h2><div id="list"></div>
+      <h2>Benchmark</h2>
+      <button class="btn" id="bench" style="width:100%">Run speed test</button>
+      <p class="note" id="benchNote" style="margin-top:8px"></p><div id="benchList"></div>
       <h2>Tips for 4 GB RAM</h2>
       <p class="note">Use 1B–1.5B models in Q4 (under about 1.2 GB). Keep context at 1024 or lower. Close other apps before loading.</p><div class="sp"></div>
     </section>
@@ -135,9 +138,16 @@ input[type=range]{width:100%;accent-color:var(--c1)}
       <p class="note">Notes GI keeps between chats. Stored on this phone only.</p>
       <div class="row2 sw"><label for="memOn" style="margin:0">Use memory in replies</label><input type="checkbox" id="memOn"></div>
       <div class="row2 sw"><label for="keep" style="margin:0">Keep chat history</label><input type="checkbox" id="keep"></div>
+      <div class="row2 sw"><label for="autoSum" style="margin:0">Auto-summary memory</label><input type="checkbox" id="autoSum"></div>
       <div style="display:flex;gap:8px;margin-top:14px"><input type="text" id="memIn" placeholder="e.g. My name is Aung" aria-label="New memory note"><button class="btn" id="memAdd">Save</button></div>
       <div id="memList"></div>
       <button class="btn ghost" id="memClear" style="margin-top:14px">Clear all memory</button>
+      <h2>My files</h2>
+      <p class="note">Add text files (notes, books, subtitles). GI finds the best parts when you ask. Works offline.</p>
+      <div class="row2 sw"><label for="docOn" style="margin:0">Use my files when answering</label><input type="checkbox" id="docOn"></div>
+      <input type="file" id="docIn" hidden multiple accept=".txt,.md,.json,.csv,.log,.srt,.html,.xml,text/*">
+      <button class="btn ghost" id="docAdd" style="margin-top:12px;width:100%">+ Add files</button>
+      <div id="docList"></div>
       <p class="note" style="margin-top:12px">Tip: in chat, type “remember …” to save a note.</p><div class="sp"></div>
     </section>
     <section id="settings">
@@ -153,7 +163,7 @@ input[type=range]{width:100%;accent-color:var(--c1)}
       <h2>App</h2>
       <div class="row2"><label for="theme">Theme</label><select id="theme"><option value="dark">Dark</option><option value="light">Light</option></select></div>
       <div class="row2" style="display:flex;gap:8px"><button class="btn ghost" id="export" style="flex:1">Export chat</button><button class="btn ghost" id="reset" style="flex:1">Reset settings</button></div>
-      <p class="note" style="margin-top:14px">GI local AI 1.1 · runs fully offline with llama.cpp. Nothing leaves this phone.</p><div class="sp"></div>
+      <p class="note" style="margin-top:14px">GI local AI 1.2 · runs fully offline with llama.cpp. Nothing leaves this phone.</p><div class="sp"></div>
     </section>
   </main>
   <nav>
@@ -169,7 +179,7 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const RD=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
 const WR=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const PERS={"Assistant":"You are GI, a helpful offline assistant. Answer clearly and briefly.","Burmese tutor":"You are GI. Always answer in Burmese (Myanmar language) unless asked otherwise. Keep answers clear and simple.","Coder":"You are GI, an expert programmer. Give short, correct code with brief explanations.","Translator":"You are GI, a translator. Translate the user's text between Burmese and English. Output only the translation."};
-const DEF={temp:.7,maxt:256,ctx:1024,thr:4,persona:"Assistant",sys:PERS.Assistant,theme:"dark",memOn:true,keep:true};
+const DEF={temp:.7,maxt:256,ctx:1024,thr:4,persona:"Assistant",sys:PERS.Assistant,theme:"dark",memOn:true,keep:true,docOn:false,autoSum:true};
 let S={...DEF,...RD("gi-settings",{})},mem=RD("gi-mem",[]),lib=RD("gi-lib",[]);
 let model=null,busy=false,cur=null,att=null,t0=0,nTok=0,timer=null;
 const NAT=!!window.Android,save=()=>WR("gi-settings",S);
@@ -199,7 +209,7 @@ $$("nav button").forEach(b=>b.onclick=()=>{$$("nav button,section").forEach(x=>x
 const map={temp:["vT",v=>(+v).toFixed(2)],maxt:["vM",v=>v],ctx:["vC",v=>v],thr:["vH",v=>v]};
 $("#persona").innerHTML=Object.keys(PERS).map(k=>"<option>"+k+"</option>").join("")+"<option>Custom</option>";
 function paint(){for(const k in map){$("#"+k).value=S[k];$("#"+map[k][0]).textContent=map[k][1](S[k])}
- $("#sys").value=S.sys;$("#theme").value=S.theme;$("#persona").value=S.persona;$("#memOn").checked=S.memOn;$("#keep").checked=S.keep;document.documentElement.dataset.theme=S.theme}
+ $("#sys").value=S.sys;$("#theme").value=S.theme;$("#persona").value=S.persona;$("#memOn").checked=S.memOn;$("#keep").checked=S.keep;$("#docOn").checked=S.docOn;$("#autoSum").checked=S.autoSum;document.documentElement.dataset.theme=S.theme}
 for(const k in map)$("#"+k).oninput=e=>{S[k]=+e.target.value;paint();save()};
 $("#persona").onchange=e=>{S.persona=e.target.value;if(PERS[S.persona])S.sys=PERS[S.persona];paint();save()};
 $("#sys").oninput=e=>{S.sys=e.target.value;S.persona="Custom";$("#persona").value="Custom";save()};
@@ -250,9 +260,9 @@ function mkRow(role,raw){const e=log.querySelector(".empty");if(e)e.remove();
  const r=document.createElement("div");r.className="row "+role;
  r.innerHTML=role==="a"?'<div class="av">GI</div><div class="col"><div class="bub"></div><div class="act"><button data-a="copy">Copy</button><button data-a="redo">Retry</button><span class="meta"></span></div></div>':'<div class="bub"></div>';
  r.bub=r.querySelector(".bub");r._raw=raw;draw(r);log.appendChild(r);bottom();return r}
-function persist(){if(!S.keep)return;WR("gi-chat",$$("#log .row").slice(-40).map(r=>[r.classList.contains("u")?"u":"a",r._raw]))}
+function persist(){if(!S.keep)return;WR("gi-chat",$$("#log .row").slice(-40).map(r=>[r.classList.contains("u")?"u":"a",r._raw,r._s?1:0]))}
 log.innerHTML=EMPTY;
-if(S.keep)RD("gi-chat",[]).forEach(([c,x])=>mkRow(c,x));
+if(S.keep)RD("gi-chat",[]).forEach(([c,x,s])=>{mkRow(c,x)._s=!!s});
 function copyText(t){if(NAT)Android.copy(t);else if(navigator.clipboard)navigator.clipboard.writeText(t);toast("Copied")}
 log.addEventListener("click",e=>{const b=e.target.closest("button[data-a]");if(!b)return;const r=b.closest(".row");
  if(b.dataset.a==="copy")copyText(r._raw);else regen(r)});
@@ -260,28 +270,33 @@ function ui(on){busy=on;const s=$("#send");s.textContent=on?"Stop":"Send";s.clas
 
 // generation
 function buildMsgs(){
- let sys=S.sys;if(S.memOn&&mem.length)sys+="\nKnown about the user:\n- "+mem.slice(0,20).join("\n- ");
- const rows=$$("#log .row").slice(-10);
- let ms=rows.map((r,i)=>({role:r.classList.contains("u")?"user":"assistant",content:i===rows.length-1?(r._full||r._raw):r._raw}));
+ const rows=$$("#log .row").filter(r=>!r._s);
+ const lastU=[...rows].reverse().find(r=>r.classList.contains("u"));
+ let sys=S.sys;
+ if(S.memOn&&mem.length)sys+="\nKnown about the user:\n- "+mem.slice(0,20).join("\n- ");
+ if(convSum)sys+="\nSummary of the earlier conversation: "+convSum;
+ sys+=docCtx(lastU?lastU._raw:"");
+ const rs=rows.slice(-10);
+ let ms=rs.map((r,i)=>({role:r.classList.contains("u")?"user":"assistant",content:i===rs.length-1?(r._full||r._raw):r._raw}));
  const lim=Math.max(300,(S.ctx-S.maxt-80)*2-sys.length);let tot=ms.reduce((a,m)=>a+m.content.length,0);
  while(tot>lim&&ms.length>1){tot-=ms[0].content.length;ms.shift()}
  const l=ms[ms.length-1];if(l.content.length>lim)l.content=l.content.slice(0,lim);
  while(ms.length&&ms[0].role!=="user")ms.shift();
  return [{role:"system",content:sys},...ms]}
 function gen(){const ms=buildMsgs();ui(true);cur=mkRow("a","");t0=performance.now();nTok=0;
- if(NAT)Android.generate(JSON.stringify({msgs:ms,temp:S.temp,max:S.maxt}));else sim()}
+ run(ms,S.temp,S.maxt)}
 function sim(){const w=("Preview reply from "+model.name+". Real replies come from the model running on your phone.").split(" ");let i=0;
  timer=setInterval(()=>{onToken((i?" ":"")+w[i++]);if(i>=w.length){clearInterval(timer);timer=null;onGenDone("")}},120)}
-window.onToken=t=>{if(!cur)return;cur._raw+=t;nTok++;
+window.onToken=t=>{if(mode==="sum"){sumBuf+=t;return}if(mode==="bench"){if(!bF)bF=performance.now();nTok++;return}if(!cur)return;cur._raw+=t;nTok++;
  if(!cur._q)cur._q=requestAnimationFrame(()=>{cur._q=0;draw(cur);bottom();$("#stat").textContent="✍️ Writing… "+(nTok/((performance.now()-t0)/1000)).toFixed(1)+" tok/s"})};
-window.onGenDone=err=>{const r=cur;cur=null;ui(false);if(!r)return;
+window.onGenDone=err=>{if(mode!=="chat"){endAux(err);return}const r=cur;cur=null;ui(false);if(!r)return;
  if(err)r._raw+=(r._raw?"\n\n":"")+"⚠️ "+err;draw(r);
- if(nTok)r.querySelector(".meta").textContent=(nTok/((performance.now()-t0)/1000)).toFixed(1)+" tok/s · "+nTok+" tokens";persist()};
+ if(nTok)r.querySelector(".meta").textContent=(lastUsed.length?"📄 "+lastUsed.join(", ")+" · ":"")+(nTok/((performance.now()-t0)/1000)).toFixed(1)+" tok/s · "+nTok+" tokens";persist();maybeSum()};
 function stopGen(){if(NAT)Android.stop();else if(timer){clearInterval(timer);timer=null;onGenDone("")}}
 function regen(r){if(busy)return;const rows=$$("#log .row");if(r!==rows[rows.length-1]||!r.classList.contains("a")){toast("Retry works on the last reply");return}
  if(!model){toast("Load a model first");return}r.remove();gen()}
 function send(){
- if(busy){stopGen();return}
+ if(busy){if(mode==="sum")pendingSend=true;stopGen();return}
  const t=$("#inp").value.trim();if(!t&&!att)return;
  $("#inp").value="";$("#inp").style.height="40px";$("#sheet").style.display="none";
  const rm=t.match(/^remember(?: that)?[:,\s]+(.+)/i);
@@ -310,9 +325,64 @@ $("#att").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)r
 // clear / export
 let armed=0;$("#trash").onclick=()=>{const b=$("#trash");
  if(!armed){armed=setTimeout(()=>{armed=0;b.classList.remove("armed")},3000);b.classList.add("armed");toast("Tap again to clear chat");return}
- clearTimeout(armed);armed=0;b.classList.remove("armed");if(busy)stopGen();log.innerHTML=EMPTY;WR("gi-chat",[]);toast("Chat cleared")};
+ clearTimeout(armed);armed=0;b.classList.remove("armed");if(busy)stopGen();log.innerHTML=EMPTY;WR("gi-chat",[]);convSum="";WR("gi-sum","");toast("Chat cleared")};
 $("#export").onclick=()=>{const t=$$("#log .row").map(r=>(r.classList.contains("u")?"You: ":"GI: ")+r._raw).join("\n\n");
  if(!t){toast("Nothing to export");return}if(NAT)Android.share(t);else copyText(t)};
+
+// ---- v1.2: my files, auto summary, benchmark ----
+let docs=RD("gi-docs",[]),convSum=RD("gi-sum",""),mode="chat",sumBuf="",sumRows=[],pendingSend=false,lastUsed=[],bench=RD("gi-bench",[]),bT=0,bF=0,idx=null;
+function run(ms,temp,max){if(NAT)Android.generate(JSON.stringify({msgs:ms,temp:temp,max:max}));else sim()}
+const tok=s=>{s=s.toLowerCase();const o=s.match(/[a-z0-9]{2,}/g)||[];const n=s.replace(/[a-z0-9\s\p{P}]+/gu,"");for(let i=0;i<n.length-1;i++)o.push(n.slice(i,i+2));return o};
+function chunks(t){const out=[];let c="";for(const p of t.split(/\n+/)){if((c+p).length>600&&c){out.push(c);c=""}c+=(c?"\n":"")+p;while(c.length>900){out.push(c.slice(0,700));c=c.slice(600)}}if(c.trim())out.push(c);return out}
+function build(){idx=[];const df={};docs.forEach(d=>chunks(d.text).forEach(c=>{const t=tok(c),tf={};t.forEach(w=>tf[w]=(tf[w]||0)+1);Object.keys(tf).forEach(w=>df[w]=(df[w]||0)+1);idx.push({n:d.name,c,tf,len:t.length||1})}));idx.df=df}
+function find(q,limit){if(!docs.length)return[];if(!idx)build();const qt=[...new Set(tok(q))],N=idx.length;
+ const sc=idx.map(x=>{let s=0;for(const w of qt){const f=x.tf[w];if(f)s+=(f/Math.sqrt(x.len))*Math.log(1+N/idx.df[w])}return[s,x]}).filter(a=>a[0]>0).sort((a,b)=>b[0]-a[0]);
+ const out=[];let used=0;for(const[,x]of sc){if(used+x.c.length>limit)break;out.push(x);used+=x.c.length;if(out.length>=3)break}
+ if(!out.length&&sc.length)out.push({n:sc[0][1].n,c:sc[0][1].c.slice(0,limit)});return out}
+function docCtx(q){lastUsed=[];if(!S.docOn||!docs.length||!q)return"";
+ const f=find(q,Math.floor((S.ctx-S.maxt)*0.9));if(!f.length)return"";
+ lastUsed=[...new Set(f.map(x=>x.n))];
+ return "\nUse these excerpts from the user's files when they help, and say which file you used.\n"+f.map(x=>"["+x.n+"] "+x.c).join("\n---\n")}
+function docRender(){const l=$("#docList");l.innerHTML="";
+ if(!docs.length){l.innerHTML='<p class="note" style="margin-top:10px">No files yet.</p>';return}
+ docs.forEach((d,i)=>{const c=document.createElement("div");c.className="card";c.innerHTML='<div class="t"><b></b><small></small></div>';
+  c.querySelector("b").textContent=d.name;c.querySelector("small").textContent=d.text.length+" characters";
+  const x=document.createElement("button");x.className="btn ghost sm";x.textContent="Delete";x.onclick=()=>{docs.splice(i,1);saveDocs()};c.appendChild(x);l.appendChild(c)})}
+function saveDocs(){idx=null;WR("gi-docs",docs);docRender()}
+$("#docAdd").onclick=()=>$("#docIn").click();
+$("#docIn").onchange=async e=>{let tot=docs.reduce((a,d)=>a+d.text.length,0);
+ for(const f of e.target.files){if(f.size>1e6){toast(f.name+": too big (max 1 MB)");continue}
+  let t;try{t=await f.text()}catch(_){continue}
+  if(t.slice(0,2000).indexOf("\u0000")>=0){toast(f.name+": not a text file");continue}
+  if(tot+t.length>1.2e6){toast("Storage full. Delete some files.");break}
+  docs=docs.filter(d=>d.name!==f.name);docs.push({name:f.name,text:t});tot+=t.length}
+ e.target.value="";saveDocs();toast("Files added")};
+$("#docOn").onchange=e=>{S.docOn=e.target.checked;save()};
+$("#autoSum").onchange=e=>{S.autoSum=e.target.checked;save()};
+docRender();
+function maybeSum(){if(!S.autoSum||busy||!model)return;
+ const rows=$$("#log .row").filter(r=>!r._s);if(rows.length<=12)return;
+ const old=rows.slice(0,rows.length-6);
+ let txt=old.map(r=>(r.classList.contains("u")?"User: ":"GI: ")+r._raw.slice(0,400)).join("\n");
+ const cap=Math.floor((S.ctx-200)*1.6);if(txt.length>cap)txt=txt.slice(-cap);
+ const ms=[{role:"system",content:"You compress chats into short notes."},{role:"user",content:(convSum?"Earlier summary: "+convSum+"\n":"")+"New messages:\n"+txt+"\n\nWrite the updated summary in under 70 words. Keep names, facts and decisions."}];
+ mode="sum";sumBuf="";sumRows=old;busy=true;$("#stat").style.display="block";$("#stat").textContent="\U0001F9E0 Updating memory\u2026";run(ms,0.2,110)}
+function endAux(err){const m=mode;mode="chat";ui(false);
+ if(m==="sum"){const s=sumBuf.trim();if(s&&!err){convSum=s;sumRows.forEach(r=>r._s=true);WR("gi-sum",convSum);persist()}}
+ else benchDone(err);
+ if(pendingSend){pendingSend=false;send()}}
+function benchRender(){const l=$("#benchList");l.innerHTML="";
+ bench.slice(0,8).forEach(b=>{const c=document.createElement("div");c.className="card";c.innerHTML='<div class="t"><b></b><small></small></div><span></span>';
+  c.querySelector("b").textContent=b.m;c.querySelector("small").textContent="first token "+b.f+" ms \u00b7 ctx "+b.c+" \u00b7 "+b.h+" threads";
+  const sp=c.querySelector("span");sp.textContent=b.t+" tok/s";sp.style.cssText="color:var(--c1);font:800 15px Orbitron";l.appendChild(c)})}
+$("#bench").onclick=()=>{if(busy){toast("Wait for the current reply");return}if(!model){toast("Load a model first");return}
+ mode="bench";nTok=0;bF=0;bT=performance.now();busy=true;$("#benchNote").textContent="Running\u2026 about 20 seconds";
+ run([{role:"system",content:"You are a helpful assistant."},{role:"user",content:"Write one short paragraph about the ocean."}],0,64)};
+function benchDone(err){const e=performance.now();$("#benchNote").textContent="";
+ if(err||nTok<2||!bF){$("#benchNote").textContent=err||"No tokens were produced.";return}
+ bench.unshift({m:model.name,t:((nTok-1)/Math.max(0.001,(e-bF)/1000)).toFixed(1),f:Math.round(bF-bT),c:S.ctx,h:S.thr});
+ bench=bench.slice(0,20);WR("gi-bench",bench);benchRender()}
+benchRender();
 </script>
 </body>
 </html>
