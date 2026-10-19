@@ -1,14 +1,35 @@
 #include <jni.h>
 #include <android/log.h>
+#include <algorithm>
 #include <atomic>
 #include <string>
 #include <vector>
 #include "llama.h"
 
 static llama_model *g_model = nullptr;
+static llama_context *g_c = nullptr;           // kept alive between replies (KV cache reuse)
+static std::vector<llama_token> g_cache;       // tokens currently stored in the KV cache
 static std::atomic<bool> g_stop{false};
 static int g_ctx = 1024, g_threads = 4;
 static bool g_init = false;
+
+// Remove KV entries [a, b) of sequence 0 (b < 0 = to the end). Works with old and new llama.cpp names.
+struct Pri0 {}; struct Pri1 : Pri0 {}; struct Pri2 : Pri1 {};
+template <class C> static auto kvrm(C c, int a, int b, Pri2) -> decltype(llama_memory_seq_rm(llama_get_memory(c), 0, a, b)) { return llama_memory_seq_rm(llama_get_memory(c), 0, a, b); }
+template <class C> static auto kvrm(C c, int a, int b, Pri1) -> decltype(llama_kv_self_seq_rm(c, 0, a, b)) { return llama_kv_self_seq_rm(c, 0, a, b); }
+template <class C> static auto kvrm(C c, int a, int b, Pri0) -> decltype(llama_kv_cache_seq_rm(c, 0, a, b)) { return llama_kv_cache_seq_rm(c, 0, a, b); }
+
+static void drop_ctx() {
+    if (g_c) { llama_free(g_c); g_c = nullptr; }
+    g_cache.clear();
+}
+
+static llama_context *make_ctx() {
+    llama_context_params cp = llama_context_default_params();
+    cp.n_ctx = g_ctx; cp.n_batch = 256; cp.n_ubatch = 256;
+    cp.n_threads = g_threads; cp.n_threads_batch = g_threads;
+    return llama_init_from_model(g_model, cp);
+}
 
 static std::string bytes_of(JNIEnv *env, jbyteArray a) {
     jsize n = env->GetArrayLength(a);
@@ -33,6 +54,7 @@ static size_t complete_len(const std::string &s) {
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_gikoko_gilocalai_Llama_unload(JNIEnv *, jobject) {
+    drop_ctx();
     if (g_model) { llama_model_free(g_model); g_model = nullptr; }
 }
 
@@ -42,6 +64,7 @@ Java_com_gikoko_gilocalai_Llama_stop(JNIEnv *, jobject) { g_stop = true; }
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_gikoko_gilocalai_Llama_load(JNIEnv *env, jobject, jstring path, jint ctx, jint threads) {
     if (!g_init) { llama_backend_init(); g_init = true; }
+    drop_ctx();
     if (g_model) { llama_model_free(g_model); g_model = nullptr; }
     g_ctx = ctx; g_threads = threads;
     const char *p = env->GetStringUTFChars(path, nullptr);
@@ -59,7 +82,6 @@ Java_com_gikoko_gilocalai_Llama_generate(JNIEnv *env, jobject, jobjectArray role
     g_stop = false;
     const llama_vocab *vocab = llama_model_get_vocab(g_model);
 
-    // messages
     int nm = env->GetArrayLength(roles);
     std::vector<std::string> rs, cs;
     for (int i = 0; i < nm; i++) {
@@ -75,7 +97,6 @@ Java_com_gikoko_gilocalai_Llama_generate(JNIEnv *env, jobject, jobjectArray role
     std::vector<llama_chat_message> msgs;
     for (int i = 0; i < nm; i++) msgs.push_back({rs[i].c_str(), cs[i].c_str()});
 
-    // prompt from the model's own chat template, plain text fallback
     std::string prompt;
     const char *tmpl = llama_model_chat_template(g_model, nullptr);
     int n = -1;
@@ -93,7 +114,6 @@ Java_com_gikoko_gilocalai_Llama_generate(JNIEnv *env, jobject, jobjectArray role
         prompt += "assistant: ";
     }
 
-    // tokenize
     int nt = -llama_tokenize(vocab, prompt.c_str(), (int) prompt.size(), nullptr, 0, true, true);
     if (nt <= 0) return env->NewStringUTF("Could not read the prompt.");
     std::vector<llama_token> toks(nt);
@@ -102,11 +122,19 @@ Java_com_gikoko_gilocalai_Llama_generate(JNIEnv *env, jobject, jobjectArray role
     if (nt >= g_ctx - 16) return env->NewStringUTF("Chat is too long for this context size. Clear the chat or raise Context size in Settings.");
     int maxn = std::min((int) maxTok, g_ctx - nt);
 
-    llama_context_params cp = llama_context_default_params();
-    cp.n_ctx = g_ctx; cp.n_batch = 256; cp.n_ubatch = 256;
-    cp.n_threads = g_threads; cp.n_threads_batch = g_threads;
-    llama_context *ctx = llama_init_from_model(g_model, cp);
-    if (!ctx) return env->NewStringUTF("Not enough memory for this context size.");
+    // reuse the KV cache: keep the common start of the old and new prompt, drop the rest
+    if (!g_c) { g_c = make_ctx(); g_cache.clear(); }
+    if (!g_c) return env->NewStringUTF("Not enough memory for this context size.");
+    size_t keep = 0;
+    while (keep < g_cache.size() && keep < toks.size() && g_cache[keep] == toks[keep]) keep++;
+    if (keep >= toks.size()) keep = toks.size() - 1;
+    if (!kvrm(g_c, (int) keep, -1, Pri2{})) {
+        drop_ctx();
+        g_c = make_ctx();
+        if (!g_c) return env->NewStringUTF("Not enough memory for this context size.");
+        keep = 0;
+    }
+    g_cache.resize(keep);
 
     llama_sampler *smpl = llama_sampler_chain_init(llama_sampler_chain_default_params());
     if (temp <= 0.01f) {
@@ -122,14 +150,14 @@ Java_com_gikoko_gilocalai_Llama_generate(JNIEnv *env, jobject, jobjectArray role
     jmethodID mid = env->GetMethodID(cls, "onToken", "([B)V");
     std::string err, pending;
 
-    // prompt in chunks
-    for (int i = 0; i < nt && !g_stop; i += 256) {
-        int c = std::min(256, nt - i);
-        if (llama_decode(ctx, llama_batch_get_one(toks.data() + i, c)) != 0) { err = "Model failed while reading the prompt."; break; }
+    for (size_t i = keep; i < toks.size() && !g_stop; i += 256) {
+        int c = (int) std::min<size_t>(256, toks.size() - i);
+        if (llama_decode(g_c, llama_batch_get_one(toks.data() + i, c)) != 0) { err = "Model failed while reading the prompt."; break; }
+        g_cache.insert(g_cache.end(), toks.begin() + i, toks.begin() + i + c);
     }
 
     for (int k = 0; k < maxn && err.empty() && !g_stop; k++) {
-        llama_token id = llama_sampler_sample(smpl, ctx, -1);
+        llama_token id = llama_sampler_sample(smpl, g_c, -1);
         if (llama_vocab_is_eog(vocab, id)) break;
         char piece[256];
         int len = llama_token_to_piece(vocab, id, piece, sizeof(piece), 0, true);
@@ -144,10 +172,11 @@ Java_com_gikoko_gilocalai_Llama_generate(JNIEnv *env, jobject, jobjectArray role
                 pending.erase(0, ok);
             }
         }
-        if (llama_decode(ctx, llama_batch_get_one(&id, 1)) != 0) { err = "Model stopped unexpectedly."; break; }
+        if (llama_decode(g_c, llama_batch_get_one(&id, 1)) != 0) { err = "Model stopped unexpectedly."; break; }
+        g_cache.push_back(id);
     }
 
     llama_sampler_free(smpl);
-    llama_free(ctx);
+    if (!err.empty()) drop_ctx();   // start clean after an error
     return env->NewStringUTF(err.c_str());
 }

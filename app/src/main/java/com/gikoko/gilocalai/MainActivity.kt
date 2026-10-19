@@ -24,6 +24,7 @@ class MainActivity : Activity() {
     private var ctx = 1024
     private var thr = 4
     private val busy = AtomicBoolean(false)
+    private var loadedName = ""
     private var fileCb: ValueCallback<Array<Uri>>? = null
 
     override fun onCreate(b: Bundle?) {
@@ -80,7 +81,7 @@ class MainActivity : Activity() {
                 val head = ByteArray(4)
                 contentResolver.openInputStream(uri)?.use { it.read(head) }
                 if (String(head, Charsets.ISO_8859_1) != "GGUF") { js("window.onModelError(" + q("This file is not a valid GGUF model.") + ")"); return@Thread }
-                Llama.unload(); pfd?.close(); pfd = null
+                loadedName = ""; Llama.unload(); pfd?.close(); pfd = null
                 val p = contentResolver.openFileDescriptor(uri, "r")!!
                 var err = Llama.load("/proc/self/fd/" + p.fd, ctx, thr)
                 val copy = File(filesDir, "model.gguf")
@@ -89,7 +90,7 @@ class MainActivity : Activity() {
                     contentResolver.openInputStream(uri)!!.use { i -> copy.outputStream().use { o -> i.copyTo(o) } }
                     err = Llama.load(copy.absolutePath, ctx, thr)
                 } else { pfd = p; copy.delete() }
-                if (err.isEmpty()) js("window.onModelLoaded(" + q(name) + "," + size + "," + q(uri.toString()) + ")")
+                if (err.isEmpty()) { loadedName = name; js("window.onModelLoaded(" + q(name) + "," + size + "," + q(uri.toString()) + ")") }
                 else js("window.onModelError(" + q(err) + ")")
             } catch (e: Throwable) {
                 js("window.onModelError(" + q(e.message ?: "Could not open the file.") + ")")
@@ -108,6 +109,7 @@ class MainActivity : Activity() {
             }
         }
         @JavascriptInterface fun stop() { Llama.stop() }
+        @JavascriptInterface fun loadedName(): String = this@MainActivity.loadedName
         @JavascriptInterface fun loadModel(uri: String, c: Int, t: Int) { ctx = c; thr = t; loadModel(Uri.parse(uri)) }
         @JavascriptInterface fun copy(text: String) {
             (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText("GI", text))
