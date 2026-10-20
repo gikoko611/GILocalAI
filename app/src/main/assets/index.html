@@ -91,12 +91,26 @@ input[type=range]{width:100%;accent-color:var(--c1)}
 .sw{display:flex;justify-content:space-between;align-items:center}.sw input{width:22px;height:22px;accent-color:var(--c1)}
 .sp{height:16px;flex:none}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--c1);padding:8px 16px;border-radius:99px;font-size:13px;z-index:60;display:none}
+:root{--kc:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><g fill='none' stroke='%232dff8a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M42.0 30.0L44.4 31.6L46.6 32.7L48.7 33.4L50.6 33.6L52.5 33.4L54.3 32.9L56.0 32.0L57.6 31.0L59.3 29.7L60.9 28.3L62.5 26.8L64.2 25.2L65.8 23.6L67.6 22.0L69.4 20.5L71.4 19.1L73.4 17.9L75.6 16.9L77.9 16.2L80.4 15.7L83.1 15.7L86.0 16.0L87.8 16.3L89.6 16.4L91.2 16.4L92.8 16.2L94.2 15.9L95.6 15.5L96.9 15.0L98.2 14.5L99.4 13.8L100.6 13.2L101.8 12.5L102.9 11.8L104.1 11.2L105.2 10.5L106.4 10.0L107.6 9.5L108.8 9.1L110.1 8.8L111.5 8.6L112.9 8.6L114.4 8.7L116.0 9.0'/> <path d='M30.0 42.0L31.6 44.4L32.7 46.6L33.4 48.7L33.6 50.6L33.4 52.5L32.9 54.3L32.0 56.0L31.0 57.6L29.7 59.3L28.3 60.9L26.8 62.5L25.2 64.2L23.6 65.8L22.0 67.6L20.5 69.4L19.1 71.4L17.9 73.4L16.9 75.6L16.2 77.9L15.7 80.4L15.7 83.1L16.0 86.0L16.3 87.8L16.4 89.6L16.4 91.2L16.2 92.8L15.9 94.2L15.5 95.6L15.0 96.9L14.5 98.2L13.8 99.4L13.2 100.6L12.5 101.8L11.8 102.9L11.2 104.1L10.5 105.2L10.0 106.4L9.5 107.6L9.1 108.8L8.8 110.1L8.6 111.5L8.6 112.9L8.7 114.4L9.0 116.0'/> <path d='M13.9 22.9L13.3 27.3L14.0 31.6L16.0 35.4L18.9 38.4L22.5 40.3L26.4 41.1L30.3 40.7L33.8 39.2L36.7 36.8L38.6 33.7L39.5 30.2L39.4 26.8L38.2 23.6L36.3 20.9L33.6 19.1L30.7 18.1L27.6 18.0L24.8 18.9L22.4 20.5L20.7 22.6L19.7 25.1L19.5 27.7L20.1 30.1L21.3 32.2L23.1 33.8L25.1 34.7L27.3 35.0L29.3 34.6L31.0 33.7L32.4 32.3L33.2 30.7L33.5 29.0L33.2 27.4L32.5 26.0L31.5 24.9L30.3 24.3L29.0 24.1L27.8 24.2L26.8 24.7L26.1 25.5L25.7 26.3L25.5 27.2L25.7 28.0L26.1 28.6'/> <path d='M5.0 5.0L5.0 100.0'/> <path d='M5.0 5.0L100.0 5.0'/></g><g fill='%23b6ff3d' opacity='.8'><path d='M54.3 32.9L54.6 34.8L55.1 36.6L55.8 38.1L56.8 39.2L58.0 39.9L59.5 40.3L61.2 40.5L63.0 40.5L64.7 40.5L64.7 40.5L64.2 38.8L63.6 37.1L63.0 35.6L62.1 34.3L61.0 33.4L59.7 32.8L58.1 32.5L56.2 32.6L54.3 32.9Z'/> <path d='M71.4 19.1L72.7 17.6L73.9 16.2L74.6 14.7L74.9 13.3L74.8 11.9L74.2 10.4L73.4 9.0L72.4 7.5L71.3 6.1L71.3 6.1L70.2 7.5L69.2 9.0L68.4 10.4L67.9 11.9L67.8 13.3L68.1 14.8L68.8 16.2L70.0 17.7L71.4 19.1Z'/> <path d='M92.8 16.2L92.7 18.2L92.8 20.1L93.2 21.7L93.9 22.9L95.0 23.9L96.3 24.6L97.9 25.2L99.7 25.6L101.4 25.9L101.4 25.9L101.2 24.2L101.0 22.4L100.7 20.8L100.1 19.3L99.3 18.2L98.1 17.3L96.6 16.7L94.8 16.4L92.8 16.2Z'/> <path d='M107.6 9.5L109.3 8.4L110.7 7.2L111.7 5.9L112.3 4.6L112.5 3.2L112.3 1.6L111.8 0.0L111.1 -1.6L110.4 -3.2L110.4 -3.2L109.1 -2.0L107.8 -0.9L106.6 0.4L105.8 1.7L105.3 3.1L105.3 4.5L105.8 6.1L106.6 7.8L107.6 9.5Z'/> <path d='M32.9 54.3L34.8 54.6L36.6 55.1L38.1 55.8L39.2 56.8L39.9 58.0L40.3 59.5L40.5 61.2L40.5 63.0L40.5 64.7L40.5 64.7L38.8 64.2L37.1 63.6L35.6 63.0L34.3 62.1L33.4 61.0L32.8 59.7L32.5 58.1L32.6 56.2L32.9 54.3Z'/> <path d='M19.1 71.4L17.6 72.7L16.2 73.9L14.7 74.6L13.3 74.9L11.9 74.8L10.4 74.2L9.0 73.4L7.5 72.4L6.1 71.3L6.1 71.3L7.5 70.2L9.0 69.2L10.4 68.4L11.9 67.9L13.3 67.8L14.8 68.1L16.2 68.8L17.7 70.0L19.1 71.4Z'/> <path d='M16.2 92.8L18.2 92.7L20.1 92.8L21.7 93.2L22.9 93.9L23.9 95.0L24.6 96.3L25.2 97.9L25.6 99.7L25.9 101.4L25.9 101.4L24.2 101.2L22.4 101.0L20.8 100.7L19.3 100.1L18.2 99.3L17.3 98.1L16.7 96.6L16.4 94.8L16.2 92.8Z'/> <path d='M9.5 107.6L8.4 109.3L7.2 110.7L5.9 111.7L4.6 112.3L3.2 112.5L1.6 112.3L0.0 111.8L-1.6 111.1L-3.2 110.4L-3.2 110.4L-2.0 109.1L-0.9 107.8L0.4 106.6L1.7 105.8L3.1 105.3L4.5 105.3L6.1 105.8L7.8 106.6L9.5 107.6Z'/> <path d='M40.0 34.0L40.8 35.5L41.7 36.8L42.7 37.8L43.8 38.4L45.0 38.6L46.3 38.5L47.6 38.2L49.1 37.8L50.5 37.3L50.5 37.3L49.6 36.0L48.7 34.8L47.7 33.8L46.7 33.0L45.6 32.5L44.3 32.4L43.0 32.7L41.5 33.2L40.0 34.0Z'/> <path d='M34.0 40.0L33.2 41.5L32.7 43.0L32.4 44.3L32.5 45.6L33.0 46.7L33.8 47.7L34.8 48.7L36.0 49.6L37.3 50.5L37.3 50.5L37.8 49.1L38.2 47.6L38.6 46.3L38.6 45.0L38.4 43.8L37.8 42.7L36.8 41.7L35.5 40.8L34.0 40.0Z'/><circle cx='116' cy='9' r='1.9'/> <circle cx='9' cy='116' r='1.9'/> <circle cx='5' cy='100' r='1.9'/> <circle cx='100' cy='5' r='1.9'/></g></svg>");--ks:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='16' viewBox='0 0 48 16'><g fill='none' stroke='%232dff8a' stroke-width='1.3' stroke-linecap='round'><path d='M0.0 8.0L1.1 6.8L2.2 5.8L3.3 4.8L4.4 4.0L5.5 3.3L6.5 2.6L7.6 2.1L8.7 1.8L9.8 1.5L10.9 1.3L12.0 1.2L13.1 1.3L14.2 1.5L15.3 1.8L16.4 2.1L17.5 2.6L18.5 3.3L19.6 4.0L20.7 4.8L21.8 5.8L22.9 6.8L24.0 8.0L25.1 9.2L26.2 10.2L27.3 11.2L28.4 12.0L29.5 12.7L30.5 13.4L31.6 13.9L32.7 14.2L33.8 14.5L34.9 14.7L36.0 14.8L37.1 14.7L38.2 14.5L39.3 14.2L40.4 13.9L41.5 13.4L42.5 12.7L43.6 12.0L44.7 11.2L45.8 10.2L46.9 9.2L48.0 8.0'/></g><g fill='%23b6ff3d' opacity='.8'><path d='M7.6 2.1L8.8 1.3L9.8 0.5L10.5 -0.4L10.9 -1.3L11.0 -2.3L10.8 -3.4L10.4 -4.5L9.8 -5.6L9.3 -6.7L9.3 -6.7L8.3 -5.9L7.5 -5.0L6.7 -4.1L6.1 -3.2L5.8 -2.3L5.9 -1.2L6.2 -0.2L6.8 1.0L7.6 2.1Z'/> <path d='M31.6 13.9L30.8 15.0L30.2 16.2L29.9 17.2L29.8 18.3L30.1 19.2L30.7 20.1L31.5 21.0L32.3 21.9L33.3 22.7L33.3 22.7L33.8 21.6L34.4 20.5L34.8 19.4L35.0 18.3L34.9 17.3L34.5 16.4L33.8 15.5L32.8 14.7L31.6 13.9Z'/><circle cx='24' cy='8' r='1.7'/></g></svg>")}
+header,nav{position:relative;z-index:6}
+header::after,nav::before{content:"";position:absolute;left:0;right:0;height:16px;background:var(--ks) repeat-x center/auto 16px;pointer-events:none;opacity:.85}
+header::after{bottom:-8px}nav::before{top:-8px}
+.kn{position:absolute;top:0;width:58px;height:58px;background:var(--kc) no-repeat center/contain;pointer-events:none;z-index:4;opacity:.7}
+.kn.l{left:0}.kn.r{right:0;transform:scaleX(-1)}
+.card,.a .bub{position:relative}
+.card::before,.card::after,.a .bub::before,.a .bub::after{content:"";position:absolute;width:22px;height:22px;background:var(--kc) no-repeat center/contain;pointer-events:none;opacity:.6}
+.card::before,.a .bub::before{left:-3px;top:-3px}
+.card::after,.a .bub::after{right:-3px;bottom:-3px;transform:rotate(180deg)}
+.sk{position:absolute;width:96px;height:96px;background:var(--kc) no-repeat center/contain;opacity:.8}
+.sk.tl{left:8px;top:8px}.sk.tr{right:8px;top:8px;transform:scaleX(-1)}.sk.bl{left:8px;bottom:8px;transform:scaleY(-1)}.sk.br{right:8px;bottom:8px;transform:scale(-1,-1)}
+.pb{height:5px;background:var(--panel2);border-radius:3px;margin-top:6px}.pb i{display:block;height:100%;background:linear-gradient(90deg,var(--c3),var(--c1));border-radius:3px}
 @media (prefers-reduced-motion:reduce){.cube{animation:none;transform:rotateX(-12deg) rotateY(-24deg)}.bar i{animation-duration:.01s}.row{animation:none}}
 </style>
 </head>
 <body>
 <canvas id="bg"></canvas>
 <div id="splash" role="button" tabindex="0" aria-label="Skip intro">
+  <i class="sk tl"></i><i class="sk tr"></i><i class="sk bl"></i><i class="sk br"></i>
   <div class="stage"><div class="cube" id="cube"></div></div>
   <div class="sname">LOCAL AI</div><div class="bar"><i></i></div>
   <div class="hint">Starting offline engine… tap to skip</div>
@@ -107,6 +121,7 @@ input[type=range]{width:100%;accent-color:var(--c1)}
     <button class="ib" id="trash" aria-label="Clear chat"><svg viewBox="0 0 24 24"><path d="M4 7h16 M9 7V4h6v3 M6 7l1 13h10l1-13"/></svg></button>
   </header>
   <main>
+    <i class="kn l"></i><i class="kn r"></i>
     <section id="chat" class="on">
       <div id="log"></div>
       <input type="file" id="att" hidden accept=".txt,.md,.json,.csv,.log,.js,.py,.html,.css,.xml,.yml,.kt,.java,.c,.cpp,.srt,text/*">
@@ -127,6 +142,14 @@ input[type=range]{width:100%;accent-color:var(--c1)}
       <label class="drop" for="file"><strong>Add GGUF model</strong>Tap to pick a .gguf file<input id="file" type="file" accept=".gguf,application/octet-stream" hidden></label>
       <p class="note" id="mnote" style="margin-top:10px"></p>
       <h2>My models</h2><div id="list"></div>
+      <h2>Get models</h2>
+      <p class="note" id="ramNote"></p>
+      <div class="row2 sw"><label for="fitOnly" style="margin:0">Only models that fit my RAM</label><input type="checkbox" id="fitOnly" checked></div>
+      <div id="recList"></div>
+      <div style="display:flex;gap:8px;margin-top:12px"><input type="text" id="hfq" placeholder="Search Hugging Face (qwen, llama…)" aria-label="Search models"><button class="btn" id="hfGo">Search</button></div>
+      <div id="hfRes"></div>
+      <div style="display:flex;gap:8px;margin-top:12px"><input type="text" id="dlUrl" placeholder="Or paste a direct .gguf link" aria-label="Direct link"><button class="btn ghost" id="dlGo">Get</button></div>
+      <h2>Downloads</h2><div id="dlList"></div>
       <h2>Benchmark</h2>
       <button class="btn" id="bench" style="width:100%">Run speed test</button>
       <p class="note" id="benchNote" style="margin-top:8px"></p><div id="benchList"></div>
@@ -164,7 +187,7 @@ input[type=range]{width:100%;accent-color:var(--c1)}
       <h2>App</h2>
       <div class="row2"><label for="theme">Theme</label><select id="theme"><option value="dark">Dark</option><option value="light">Light</option></select></div>
       <div class="row2" style="display:flex;gap:8px"><button class="btn ghost" id="export" style="flex:1">Export chat</button><button class="btn ghost" id="reset" style="flex:1">Reset settings</button></div>
-      <p class="note" style="margin-top:14px">GI local AI 1.3 · runs fully offline with llama.cpp. Nothing leaves this phone.</p><div class="sp"></div>
+      <p class="note" style="margin-top:14px">GI local AI 1.4 · runs fully offline with llama.cpp. Nothing leaves this phone.</p><div class="sp"></div>
     </section>
   </main>
   <nav>
@@ -239,7 +262,7 @@ function renderLib(){const l=$("#list");l.innerHTML="";
  lib.forEach((m,i)=>{const c=document.createElement("div");c.className="card";c.innerHTML='<div class="t"><b></b><small></small></div>';
   c.querySelector("b").textContent=m.name;c.querySelector("small").textContent=fmt(m.size)+(m.size>1.6e9?" · large for 4 GB RAM":"");
   const on=model&&model.name===m.name,a=document.createElement("button");a.className="btn sm"+(on?" ghost":"");a.textContent=on?"Active":"Load";a.onclick=()=>{if(!on)loadLib(i)};
-  const d=document.createElement("button");d.className="btn ghost sm";d.textContent="✕";d.setAttribute("aria-label","Remove");d.onclick=()=>{lib.splice(i,1);WR("gi-lib",lib);renderLib()};
+  const d=document.createElement("button");d.className="btn ghost sm";d.textContent="✕";d.setAttribute("aria-label","Remove");d.onclick=()=>{if(NAT&&m.uri&&m.uri.startsWith("/"))Android.deleteModel(m.uri);lib.splice(i,1);WR("gi-lib",lib);renderLib()};
   c.append(a,d);l.appendChild(c)})}
 function loadLib(i){const m=lib[i];if(NAT){if(!m.uri){toast("Pick this file again");return}Android.loadModel(m.uri,S.ctx,S.thr)}else{model=m;setPill(m.name,1);renderLib()}}
 $(".drop").addEventListener("click",e=>{if(NAT){e.preventDefault();Android.pickModel(S.ctx,S.thr)}});
@@ -388,6 +411,56 @@ $("#autoLoad").onchange=e=>{S.autoLoad=e.target.checked;save()};
 if(NAT){const ln=Android.loadedName();
  if(ln){model=lib.find(x=>x.name===ln)||{name:ln,size:0,uri:null};setPill(ln,1);renderLib()}
  else if(S.autoLoad&&lib[0]&&lib[0].uri)Android.loadModel(lib[0].uri,S.ctx,S.thr)}
+// ---- v1.4: model downloads ----
+let dls=RD("gi-dl",[]),ramMB=NAT?Android.ramMB():4096,cbs={},cbId=0,lastFiles=null,lastRepos=[];
+dls.forEach(d=>{if(d.state==="run")d.state="pause"});
+const fitMax=()=>ramMB*1048576*0.3,tightMax=()=>ramMB*1048576*0.45;
+const fitTag=z=>z<=fitMax()?["fits","var(--c1)"]:z<=tightMax()?["tight","#ffd24d"]:["too big","var(--bad)"];
+const REC=[["Qwen2.5 0.5B Instruct","Qwen/Qwen2.5-0.5B-Instruct-GGUF","qwen2.5-0.5b-instruct-q4_k_m.gguf",0.40e9],["Llama 3.2 1B Instruct","bartowski/Llama-3.2-1B-Instruct-GGUF","Llama-3.2-1B-Instruct-Q4_K_M.gguf",0.81e9],["Qwen2.5 1.5B Instruct","Qwen/Qwen2.5-1.5B-Instruct-GGUF","qwen2.5-1.5b-instruct-q4_k_m.gguf",1.12e9],["Qwen2.5 3B Instruct","Qwen/Qwen2.5-3B-Instruct-GGUF","qwen2.5-3b-instruct-q4_k_m.gguf",2.1e9]];
+const hfUrl=(r,f)=>"https://huggingface.co/"+r+"/resolve/main/"+f;
+$("#ramNote").textContent="Your phone has "+(ramMB/1024).toFixed(1)+" GB RAM. Comfortable model size: up to "+fmt(fitMax())+".";
+function mk(t,sub,tag,btns){const c=document.createElement("div");c.className="card";c.innerHTML='<div class="t"><b></b><small></small></div>';
+ c.querySelector("b").textContent=t;c.querySelector("small").textContent=sub;
+ if(tag){const s=document.createElement("span");s.textContent=tag[0];s.style.cssText="font-size:11px;padding:2px 8px;border:1px solid "+tag[1]+";color:"+tag[1]+";border-radius:99px";c.appendChild(s)}
+ btns.forEach(([l,f,g])=>{const b=document.createElement("button");b.className="btn sm"+(g?" ghost":"");b.textContent=l;b.onclick=f;c.appendChild(b)});return c}
+function recRender(){const l=$("#recList");l.innerHTML="";const only=$("#fitOnly").checked;
+ REC.filter(r=>!only||r[3]<=tightMax()).forEach(r=>l.appendChild(mk(r[0],"~"+fmt(r[3]),fitTag(r[3]),[["Download",()=>dlStart(hfUrl(r[1],r[2]),r[2])]])));
+ if(!l.children.length)l.innerHTML='<p class="note" style="margin-top:8px">No recommended model fits. Turn off the filter to see all.</p>'}
+$("#fitOnly").onchange=()=>{recRender();if(lastFiles)showFiles(lastFiles)};
+function dlSync(save){if(save)WR("gi-dl",dls);dlRender()}
+function dlRender(){const l=$("#dlList");l.innerHTML="";
+ if(!dls.length){l.innerHTML='<p class="note" style="margin-top:6px">No downloads.</p>';return}
+ dls.forEach(d=>{const pc=d.total?Math.min(100,Math.round(d.done*100/d.total)):0;
+  const sub=d.state==="error"?(d.msg||"Failed"):d.state==="pause"?"Paused · "+fmt(d.done)+(d.total?" / "+fmt(d.total):""):fmt(d.done)+(d.total?" / "+fmt(d.total)+" ("+pc+"%)":"");
+  const c=mk(d.name,sub,null,[d.state==="run"?["Pause",()=>{Android.dlPause(d.name)},1]:["Resume",()=>dlStart(d.url,d.name)],["\u2715",()=>{if(NAT)Android.dlCancel(d.name);dls=dls.filter(x=>x!==d);dlSync(true)},1]]);
+  const pb=document.createElement("div");pb.className="pb";pb.innerHTML='<i style="width:'+pc+'%"></i>';c.querySelector(".t").appendChild(pb);l.appendChild(c)})}
+function dlStart(url,name){if(!NAT){toast("Downloads work in the installed app");return}
+ name=name.replace(/[^\w.\-]+/g,"_");if(!/\.gguf$/i.test(name))name+=".gguf";
+ let d=dls.find(x=>x.name===name);if(!d){d={name,url,done:0,total:0,state:"run"};dls.unshift(d)}else{d.url=url;d.state="run";d.msg=""}
+ dlSync(true);Android.dlStart(url,name)}
+window.onDl=o=>{const d=dls.find(x=>x.name===o.name);if(!d)return;d.done=o.done;d.total=o.total;d.state=o.state;d.msg=o.msg||"";
+ if(o.state==="done"){lib=lib.filter(x=>x.name!==o.name);lib.unshift({name:o.name,size:o.total||o.done,uri:o.path});WR("gi-lib",lib);dls=dls.filter(x=>x!==d);renderLib();toast("Downloaded "+o.name)}
+ dlSync(o.state!=="run")};
+function http(url,cb){if(!NAT){toast("Search works in the installed app");return}const id=++cbId;cbs[id]=cb;Android.httpGet(url,id)}
+window.onHttp=(id,st,body)=>{const f=cbs[id];delete cbs[id];if(f)f(st,body)};
+function showRepos(){const l=$("#hfRes");l.innerHTML="";lastFiles=null;
+ if(!lastRepos.length){l.innerHTML='<p class="note" style="margin-top:10px">No results.</p>';return}
+ lastRepos.forEach(m=>l.appendChild(mk(m.id,(m.downloads||0)+" downloads",null,[["Files",()=>hfFiles(m.id)]])))}
+function showFiles(o){lastFiles=o;const l=$("#hfRes");l.innerHTML="";const only=$("#fitOnly").checked;
+ const back=document.createElement("button");back.className="btn ghost sm";back.style.marginTop="10px";back.textContent="\u2190 "+o.id;back.onclick=showRepos;l.appendChild(back);
+ const fs=o.files.filter(f=>!only||f.s<=tightMax());
+ if(!fs.length)l.insertAdjacentHTML("beforeend",'<p class="note" style="margin-top:10px">No file fits your RAM. Turn off the filter to see all.</p>');
+ fs.forEach(f=>l.appendChild(mk(f.p,f.s?fmt(f.s):"size unknown",f.s?fitTag(f.s):null,[["Download",()=>dlStart(hfUrl(o.id,f.p),f.p.split("/").pop())]])))}
+function hfFiles(id){$("#hfRes").innerHTML='<p class="note" style="margin-top:10px">Loading files…</p>';
+ http("https://huggingface.co/api/models/"+id+"/tree/main",(st,b)=>{let a=[];try{a=JSON.parse(b)}catch(e){}
+  const files=(Array.isArray(a)?a:[]).filter(f=>f.type==="file"&&/\.gguf$/i.test(f.path)).map(f=>({p:f.path,s:(f.lfs&&f.lfs.size)||f.size||0})).sort((x,y)=>x.s-y.s);
+  showFiles({id,files})})}
+$("#hfGo").onclick=()=>{const q=$("#hfq").value.trim();if(!q)return;$("#hfRes").innerHTML='<p class="note" style="margin-top:10px">Searching…</p>';
+ http("https://huggingface.co/api/models?search="+encodeURIComponent(q)+"&filter=gguf&sort=downloads&limit=15",(st,b)=>{let a=[];try{a=JSON.parse(b)}catch(e){}
+  lastRepos=Array.isArray(a)?a:[];if(st!==200&&!lastRepos.length){$("#hfRes").innerHTML='<p class="note" style="margin-top:10px">Search failed. Check your internet.</p>';return}showRepos()})};
+$("#dlGo").onclick=()=>{const u=$("#dlUrl").value.trim();if(!/^https:\/\/.+\.gguf(\?.*)?$/i.test(u)){toast("Paste an https link ending in .gguf");return}
+ let n="model.gguf";try{n=decodeURIComponent(u.split("?")[0].split("/").pop())}catch(e){}dlStart(u,n);$("#dlUrl").value=""};
+recRender();dlRender();
 </script>
 </body>
 </html>

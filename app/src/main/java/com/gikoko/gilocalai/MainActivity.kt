@@ -1,6 +1,9 @@
 package com.gikoko.gilocalai
 
 import android.app.Activity
+import android.app.ActivityManager
+import java.net.HttpURLConnection
+import java.net.URL
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -25,6 +28,7 @@ class MainActivity : Activity() {
     private var thr = 4
     private val busy = AtomicBoolean(false)
     private var loadedName = ""
+    private val dl by lazy { Downloader(File(filesDir, "models").apply { mkdirs() }) { json -> js("window.onDl($json)") } }
     private var fileCb: ValueCallback<Array<Uri>>? = null
 
     override fun onCreate(b: Bundle?) {
@@ -98,6 +102,20 @@ class MainActivity : Activity() {
         }.start()
     }
 
+    private fun loadFile(f: File) {
+        js("window.onModelLoading(" + q(f.name) + ")")
+        Thread {
+            try {
+                loadedName = ""; Llama.unload(); pfd?.close(); pfd = null
+                val err = Llama.load(f.absolutePath, ctx, thr)
+                if (err.isEmpty()) { loadedName = f.name; js("window.onModelLoaded(" + q(f.name) + "," + f.length() + "," + q(f.absolutePath) + ")") }
+                else js("window.onModelError(" + q(err) + ")")
+            } catch (e: Throwable) {
+                js("window.onModelError(" + q(e.message ?: "Could not open the file.") + ")")
+            }
+        }.start()
+    }
+
     inner class Bridge {
         @JavascriptInterface fun pickModel(c: Int, t: Int) {
             ctx = c; thr = t
@@ -109,8 +127,38 @@ class MainActivity : Activity() {
             }
         }
         @JavascriptInterface fun stop() { Llama.stop() }
+        @JavascriptInterface fun ramMB(): Int {
+            val m = ActivityManager.MemoryInfo()
+            (getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager).getMemoryInfo(m)
+            return (m.totalMem / 1048576L).toInt()
+        }
+        @JavascriptInterface fun dlStart(url: String, name: String) = dl.start(url, name)
+        @JavascriptInterface fun dlPause(name: String) = dl.pause(name)
+        @JavascriptInterface fun dlCancel(name: String) = dl.cancel(name)
+        @JavascriptInterface fun deleteModel(path: String) {
+            val f = File(path)
+            if (f.parentFile?.canonicalPath == File(filesDir, "models").canonicalPath) f.delete()
+        }
+        @JavascriptInterface fun httpGet(url: String, id: Int) {
+            if (!url.startsWith("https://huggingface.co/")) return
+            Thread {
+                var st = 0
+                var body: String
+                try {
+                    val c = URL(url).openConnection() as HttpURLConnection
+                    c.connectTimeout = 15000
+                    c.readTimeout = 20000
+                    c.setRequestProperty("User-Agent", "GI-local-AI")
+                    st = c.responseCode
+                    body = ((if (st in 200..299) c.inputStream else c.errorStream)?.bufferedReader()?.use { it.readText() } ?: "").take(2000000)
+                } catch (e: Throwable) {
+                    body = e.message ?: "network error"
+                }
+                js("window.onHttp($id,$st," + q(body) + ")")
+            }.start()
+        }
         @JavascriptInterface fun loadedName(): String = this@MainActivity.loadedName
-        @JavascriptInterface fun loadModel(uri: String, c: Int, t: Int) { ctx = c; thr = t; loadModel(Uri.parse(uri)) }
+        @JavascriptInterface fun loadModel(uri: String, c: Int, t: Int) { ctx = c; thr = t; if (uri.startsWith("/")) loadFile(File(uri)) else loadModel(Uri.parse(uri)) }
         @JavascriptInterface fun copy(text: String) {
             (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText("GI", text))
         }
