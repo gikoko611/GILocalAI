@@ -85,7 +85,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .card .t{flex:1;min-width:0}.card b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card small,.note{color:var(--mut);font-size:13px}
 h2{font-size:14px;margin:20px 0 6px;color:var(--c1)}
-textarea.f,select,input[type=text]{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--tx);font:500 15px "Chakra Petch";padding:10px 12px;border-radius:12px}
+textarea.f,select,input[type=text],input[type=password]{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--tx);font:500 15px "Chakra Petch";padding:10px 12px;border-radius:12px}
 .row2{margin-top:14px}.row2 label{display:flex;justify-content:space-between;margin-bottom:6px}.row2 label span{color:var(--c1);font-family:Orbitron;font-size:13px}
 input[type=range]{width:100%;accent-color:var(--c1)}
 .sw{display:flex;justify-content:space-between;align-items:center}.sw input{width:22px;height:22px;accent-color:var(--c1)}
@@ -124,12 +124,13 @@ header::after{bottom:-8px}nav::before{top:-8px}
     <i class="kn l"></i><i class="kn r"></i>
     <section id="chat" class="on">
       <div id="log"></div>
-      <input type="file" id="att" hidden accept=".txt,.md,.json,.csv,.log,.js,.py,.html,.css,.xml,.yml,.kt,.java,.c,.cpp,.srt,text/*">
+      <input type="file" id="att" hidden accept=".txt,.md,.json,.csv,.log,.js,.py,.html,.css,.xml,.yml,.kt,.java,.c,.cpp,.srt,.pdf,application/pdf,text/*">
       <div class="dock">
         <div id="stat"></div>
         <div id="chip"><span id="chipn"></span><button id="chipx" aria-label="Remove file">✕</button></div>
         <div id="sheet">
-          <button data-q="@file">📎  Attach text file</button>
+          <button data-q="@file">📎  Attach text or PDF file</button>
+          <button data-q="/image ">🖼  Create image (online)</button>
           <button data-q="Summarize this in a few bullet points.">📝  Summarize</button>
           <button data-q="Translate this to Burmese:">🌐  Translate to Burmese</button>
           <button data-q="Explain this in simple words:">💡  Explain simply</button>
@@ -168,7 +169,7 @@ header::after{bottom:-8px}nav::before{top:-8px}
       <h2>My files</h2>
       <p class="note">Add text files (notes, books, subtitles). GI finds the best parts when you ask. Works offline.</p>
       <div class="row2 sw"><label for="docOn" style="margin:0">Use my files when answering</label><input type="checkbox" id="docOn"></div>
-      <input type="file" id="docIn" hidden multiple accept=".txt,.md,.json,.csv,.log,.srt,.html,.xml,text/*">
+      <input type="file" id="docIn" hidden multiple accept=".txt,.md,.json,.csv,.log,.srt,.html,.xml,.pdf,application/pdf,text/*">
       <button class="btn ghost" id="docAdd" style="margin-top:12px;width:100%">+ Add files</button>
       <div id="docList"></div>
       <p class="note" style="margin-top:12px">Tip: in chat, type “remember …” to save a note.</p><div class="sp"></div>
@@ -184,10 +185,26 @@ header::after{bottom:-8px}nav::before{top:-8px}
       <h2>Assistant</h2>
       <div class="row2"><label for="persona">Persona</label><select id="persona"></select></div>
       <div class="row2"><label for="sys">System prompt</label><textarea class="f" id="sys" style="height:84px"></textarea></div>
+      <h2>Online mode</h2>
+      <p class="note">Use a cloud AI with your own API key. Your messages are sent to the provider you choose. Local mode stays fully offline.</p>
+      <div class="row2 sw"><label for="onOn" style="margin:0">Use online AI</label><input type="checkbox" id="onOn"></div>
+      <div class="row2"><label for="onPre">Provider</label><select id="onPre"></select></div>
+      <div class="row2"><label for="onUrl">Base URL</label><input type="text" id="onUrl" autocapitalize="off" autocomplete="off"></div>
+      <div class="row2"><label for="onKey">API key</label><input type="password" id="onKey" autocomplete="off"></div>
+      <div class="row2"><label for="onModel">Model name</label><input type="text" id="onModel" autocapitalize="off" autocomplete="off"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;align-items:center"><button class="btn ghost sm" id="onList">Get model list</button><label class="sw" style="gap:8px;font-size:13px;flex:1;justify-content:flex-end"><span>Free only</span><input type="checkbox" id="onFree"></label></div>
+      <input type="text" id="onSearch" placeholder="Search models" style="margin-top:8px" aria-label="Search models">
+      <div id="onModels"></div>
+      <div class="row2"><label for="onImg">Image model (optional)</label><input type="text" id="onImg" autocapitalize="off" autocomplete="off" placeholder="e.g. gpt-image-1"></div>
+      <div class="row2"><label for="onFmt">API format</label><select id="onFmt"><option value="openai">OpenAI-compatible</option><option value="anthropic">Anthropic</option></select></div>
+      <div class="row2 sw"><label for="onShare" style="margin:0">Share memory notes and file excerpts online</label><input type="checkbox" id="onShare"></div>
+      <button class="btn ghost" id="onTest" style="margin-top:12px;width:100%">Test connection</button>
+      <h2>Token usage</h2><div class="card" id="useBox"></div>
+      <button class="btn ghost sm" id="useReset" style="margin-top:10px">Reset counters</button>
       <h2>App</h2>
       <div class="row2"><label for="theme">Theme</label><select id="theme"><option value="dark">Dark</option><option value="light">Light</option></select></div>
       <div class="row2" style="display:flex;gap:8px"><button class="btn ghost" id="export" style="flex:1">Export chat</button><button class="btn ghost" id="reset" style="flex:1">Reset settings</button></div>
-      <p class="note" style="margin-top:14px">GI local AI 1.4 · runs fully offline with llama.cpp. Nothing leaves this phone.</p><div class="sp"></div>
+      <p class="note" style="margin-top:14px">GI local AI 1.6 · runs fully offline with llama.cpp. Nothing leaves this phone.</p><div class="sp"></div>
     </section>
   </main>
   <nav>
@@ -203,7 +220,7 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const RD=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
 const WR=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const PERS={"Assistant":"You are GI, a helpful offline assistant. Answer clearly and briefly.","Burmese tutor":"You are GI. Always answer in Burmese (Myanmar language) unless asked otherwise. Keep answers clear and simple.","Coder":"You are GI, an expert programmer. Give short, correct code with brief explanations.","Translator":"You are GI, a translator. Translate the user's text between Burmese and English. Output only the translation."};
-const DEF={temp:.7,maxt:256,ctx:1024,thr:4,persona:"Assistant",sys:PERS.Assistant,theme:"dark",memOn:true,keep:true,docOn:false,autoSum:true,autoLoad:true};
+const DEF={temp:.7,maxt:256,ctx:1024,thr:4,persona:"Assistant",sys:PERS.Assistant,theme:"dark",memOn:true,keep:true,docOn:false,autoSum:true,autoLoad:true,online:false,onShare:false};
 let S={...DEF,...RD("gi-settings",{})},mem=RD("gi-mem",[]),lib=RD("gi-lib",[]);
 let model=null,busy=false,cur=null,att=null,t0=0,nTok=0,timer=null;
 const NAT=!!window.Android,save=()=>WR("gi-settings",S);
@@ -256,7 +273,7 @@ $("#memClear").onclick=()=>{mem=[];saveMem();memRender()};
 memRender();
 
 // models
-const setPill=(t,on)=>{$("#pill").textContent=t;$("#pill").classList.toggle("on",!!on)};
+const rawPill=(t,on)=>{$("#pill").textContent=t;$("#pill").classList.toggle("on",!!on)};const setPill=(t,on)=>{if(!S.online)rawPill(t,on)};
 function renderLib(){const l=$("#list");l.innerHTML="";
  if(!lib.length){l.innerHTML='<p class="note" style="margin-top:6px">No models yet. Add a .gguf file above.</p>';return}
  lib.forEach((m,i)=>{const c=document.createElement("div");c.className="card";c.innerHTML='<div class="t"><b></b><small></small></div>';
@@ -279,17 +296,17 @@ const log=$("#log"),EMPTY='<div class="empty"><b>GI ready</b>Add a .gguf model i
 const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 function md(s){return s.split("```").map((p,i)=>i%2?"<pre><code>"+esc(p.replace(/^[\w+-]*\n/,""))+"</code></pre>":esc(p).replace(/`([^`\n]+)`/g,"<code>$1</code>").replace(/\*\*([^*\n]+)\*\*/g,"<b>$1</b>")).join("")}
 const bottom=()=>{$("#chat").scrollTop=1e9};
-function draw(r){r.bub.innerHTML=r._raw?md(r._raw):(busy&&r===cur?'<span class="dots"><i></i><i></i><i></i></span> Writing':"")}
+function draw0(r){r.bub.innerHTML=r._raw?md(r._raw):(busy&&r===cur?'<span class="dots"><i></i><i></i><i></i></span> '+(mode==="image"?"Drawing":"Writing"):"")}
 function mkRow(role,raw){const e=log.querySelector(".empty");if(e)e.remove();
  const r=document.createElement("div");r.className="row "+role;
- r.innerHTML=role==="a"?'<div class="av">GI</div><div class="col"><div class="bub"></div><div class="act"><button data-a="copy">Copy</button><button data-a="redo">Retry</button><span class="meta"></span></div></div>':'<div class="bub"></div>';
+ r.innerHTML=role==="a"?'<div class="av">GI</div><div class="col"><div class="bub"></div><div class="act"><button data-a="copy">Copy</button><button data-a="redo">Retry</button><button data-a="zip" style="display:none">ZIP</button><button data-a="img" style="display:none">Save image</button><span class="meta"></span></div></div>':'<div class="bub"></div>';
  r.bub=r.querySelector(".bub");r._raw=raw;draw(r);log.appendChild(r);bottom();return r}
 function persist(){if(!S.keep)return;WR("gi-chat",$$("#log .row").slice(-40).map(r=>[r.classList.contains("u")?"u":"a",r._raw,r._s?1:0]))}
 log.innerHTML=EMPTY;
 if(S.keep)RD("gi-chat",[]).forEach(([c,x,s])=>{mkRow(c,x)._s=!!s});
 function copyText(t){if(NAT)Android.copy(t);else if(navigator.clipboard)navigator.clipboard.writeText(t);toast("Copied")}
 log.addEventListener("click",e=>{const b=e.target.closest("button[data-a]");if(!b)return;const r=b.closest(".row");
- if(b.dataset.a==="copy")copyText(r._raw);else regen(r)});
+ const a=b.dataset.a;if(a==="copy")copyText(r._raw);else if(a==="zip")zipCode(r);else if(a==="img")saveImg(r);else regen(r)});
 function ui(on){busy=on;const s=$("#send");s.textContent=on?"Stop":"Send";s.classList.toggle("stop",on);$("#stat").style.display=on?"block":"none";if(on)$("#stat").textContent="✍️ Writing…"}
 
 // generation
@@ -297,38 +314,41 @@ function buildMsgs(){
  const rows=$$("#log .row").filter(r=>!r._s);
  const lastU=[...rows].reverse().find(r=>r.classList.contains("u"));
  let sys=S.sys;
- if(S.memOn&&mem.length)sys+="\nKnown about the user:\n- "+mem.slice(0,20).join("\n- ");
+ const share=!S.online||S.onShare;if(S.memOn&&mem.length&&share)sys+="\nKnown about the user:\n- "+mem.slice(0,20).join("\n- ");
  if(convSum)sys+="\nSummary of the earlier conversation: "+convSum;
- sys+=docCtx(lastU?lastU._raw:"");
+ if(S.online)sys+="\nWhen you write code, put each file in its own code block and write its file name on the line just before the block, like **src/app.js**.";
+ if(share)sys+=docCtx(lastU?lastU._raw:"");
  const rs=rows.slice(-10);
  let ms=rs.map((r,i)=>({role:r.classList.contains("u")?"user":"assistant",content:i===rs.length-1?(r._full||r._raw):r._raw}));
- const lim=Math.max(300,(S.ctx-S.maxt-80)*2-sys.length);let tot=ms.reduce((a,m)=>a+m.content.length,0);
+ const lim=S.online?70000:Math.max(300,(S.ctx-S.maxt-80)*2-sys.length);let tot=ms.reduce((a,m)=>a+m.content.length,0);
  while(tot>lim&&ms.length>1){tot-=ms[0].content.length;ms.shift()}
  const l=ms[ms.length-1];if(l.content.length>lim)l.content=l.content.slice(0,lim);
  while(ms.length&&ms[0].role!=="user")ms.shift();
  return [{role:"system",content:sys},...ms]}
 function gen(){const ms=buildMsgs();ui(true);cur=mkRow("a","");t0=performance.now();nTok=0;
  run(ms,S.temp,S.maxt)}
-function sim(){const w=("Preview reply from "+model.name+". Real replies come from the model running on your phone.").split(" ");let i=0;
+function sim(){const w=("Preview reply from "+(model?model.name:"the online model")+". Real replies come from the model running on your phone.").split(" ");let i=0;
  timer=setInterval(()=>{onToken((i?" ":"")+w[i++]);if(i>=w.length){clearInterval(timer);timer=null;onGenDone("")}},120)}
-window.onToken=t=>{if(mode==="sum"){sumBuf+=t;return}if(mode==="bench"){if(!bF)bF=performance.now();nTok++;return}if(!cur)return;cur._raw+=t;nTok++;
+window.onToken=t=>{if(mode==="sum"||mode==="test"){sumBuf+=t;return}if(mode==="bench"){if(!bF)bF=performance.now();nTok++;return}if(!cur)return;cur._raw+=t;nTok++;
  if(!cur._q)cur._q=requestAnimationFrame(()=>{cur._q=0;draw(cur);bottom();$("#stat").textContent="✍️ Writing… "+(nTok/((performance.now()-t0)/1000)).toFixed(1)+" tok/s"})};
 window.onGenDone=err=>{if(mode!=="chat"){endAux(err);return}const r=cur;cur=null;ui(false);if(!r)return;
  if(err)r._raw+=(r._raw?"\n\n":"")+"⚠️ "+err;draw(r);
- if(nTok)r.querySelector(".meta").textContent=(lastUsed.length?"📄 "+lastUsed.join(", ")+" · ":"")+(nTok/((performance.now()-t0)/1000)).toFixed(1)+" tok/s · "+nTok+" tokens";persist();maybeSum()};
+ if(lastUse){r.querySelector(".meta").textContent="\u2191"+lastUse[0]+" \u2193"+lastUse[1]+" tokens";lastUse=null}else if(nTok)r.querySelector(".meta").textContent=(lastUsed.length?"📄 "+lastUsed.join(", ")+" · ":"")+(nTok/((performance.now()-t0)/1000)).toFixed(1)+" tok/s · "+nTok+" tokens";persist();maybeSum()};
 function stopGen(){if(NAT)Android.stop();else if(timer){clearInterval(timer);timer=null;onGenDone("")}}
 function regen(r){if(busy)return;const rows=$$("#log .row");if(r!==rows[rows.length-1]||!r.classList.contains("a")){toast("Retry works on the last reply");return}
- if(!model){toast("Load a model first");return}r.remove();gen()}
+ if(!model&&!S.online){toast("Load a model first");return}r.remove();gen()}
 function send(){
  if(busy){if(mode==="sum")pendingSend=true;stopGen();return}
  const t=$("#inp").value.trim();if(!t&&!att)return;
  $("#inp").value="";$("#inp").style.height="40px";$("#sheet").style.display="none";
+ const im=t.match(/^\/image\s+([\s\S]+)/i);if(im&&!att){genImage(im[1].trim());return}
  const rm=t.match(/^remember(?: that)?[:,\s]+(.+)/i);
  if(rm&&!att){mkRow("u",t);memAdd(rm[1]);mkRow("a","Saved to memory: "+rm[1].trim().slice(0,200));persist();return}
  let raw=t,full=null;
  if(att){raw="📎 "+att.name+(att.trunc?" (trimmed)":"")+(t?"\n"+t:"");full="File: "+att.name+"\n```\n"+att.text+"\n```\n\n"+(t||"Summarize this file.");att=null;chip()}
  const u=mkRow("u",raw);u._full=full;
- if(!model){mkRow("a","No model loaded. Open the Models tab and add a .gguf file first.");persist();return}
+ if(S.online&&!isConfigured()){mkRow("a","Online mode needs a Base URL, API key and model name. Open Settings.");persist();return}
+ if(!model&&!S.online){mkRow("a","No model loaded. Open the Models tab and add a .gguf file first.");persist();return}
  gen()}
 $("#send").onclick=send;
 $("#inp").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
@@ -340,10 +360,11 @@ $$("#sheet button").forEach(b=>b.onclick=()=>{$("#sheet").style.display="none";c
 function chip(){$("#chip").style.display=att?"flex":"none";if(att)$("#chipn").textContent="📎 "+att.name}
 $("#chipx").onclick=()=>{att=null;chip()};
 $("#att").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
- if(f.size>2e6){toast("File too big (max 2 MB)");return}
- let x;try{x=await f.text()}catch(_){toast("Could not read file");return}
+ const isPdf=/\.pdf$/i.test(f.name);if(f.size>(isPdf?25e6:2e6)){toast("File too big (max "+(isPdf?"25":"2")+" MB)");return}
+ let x;try{x=isPdf?await pdfText(f,(p,n)=>toast("Reading PDF "+p+"/"+n)):await f.text()}catch(_){toast(isPdf?"Could not read this PDF (is pdf.min.js in assets?)":"Could not read file");return}
+ if(isPdf&&!x.trim()){toast("No text found. Scanned PDFs are not supported.");return}
  if(x.slice(0,2000).indexOf("\u0000")>=0){toast("Only text files are supported");return}
- const max=Math.max(500,Math.floor((S.ctx-S.maxt-300)*2));att={name:f.name,text:x.slice(0,max),trunc:x.length>max};chip();
+ const max=S.online?60000:Math.max(500,Math.floor((S.ctx-S.maxt-300)*2));att={name:f.name,text:x.slice(0,max),trunc:x.length>max};chip();
  if(att.trunc)toast("File trimmed to fit the context size")};
 
 // clear / export
@@ -355,7 +376,7 @@ $("#export").onclick=()=>{const t=$$("#log .row").map(r=>(r.classList.contains("
 
 // ---- v1.2: my files, auto summary, benchmark ----
 let docs=RD("gi-docs",[]),convSum=RD("gi-sum",""),mode="chat",sumBuf="",sumRows=[],pendingSend=false,lastUsed=[],bench=RD("gi-bench",[]),bT=0,bF=0,idx=null;
-function run(ms,temp,max){if(NAT)Android.generate(JSON.stringify({msgs:ms,temp:temp,max:max}));else sim()}
+function run(ms,temp,max){if((S.online||forceOnline)&&NAT)Android.onlineChat(JSON.stringify({url:OL.url,key:OL.key,model:OL.model,fmt:OL.fmt,msgs:ms,temp:temp,max:max}));else if(NAT)Android.generate(JSON.stringify({msgs:ms,temp:temp,max:max}));else sim()}
 const tok=s=>{s=s.toLowerCase();const o=s.match(/[a-z0-9]{2,}/g)||[];const n=s.replace(/[a-z0-9\s\p{P}]+/gu,"");for(let i=0;i<n.length-1;i++)o.push(n.slice(i,i+2));return o};
 function chunks(t){const out=[];let c="";for(const p of t.split(/\n+/)){if((c+p).length>600&&c){out.push(c);c=""}c+=(c?"\n":"")+p;while(c.length>900){out.push(c.slice(0,700));c=c.slice(600)}}if(c.trim())out.push(c);return out}
 function build(){idx=[];const df={};docs.forEach(d=>chunks(d.text).forEach(c=>{const t=tok(c),tf={};t.forEach(w=>tf[w]=(tf[w]||0)+1);Object.keys(tf).forEach(w=>df[w]=(df[w]||0)+1);idx.push({n:d.name,c,tf,len:t.length||1})}));idx.df=df}
@@ -364,7 +385,7 @@ function find(q,limit){if(!docs.length)return[];if(!idx)build();const qt=[...new
  const out=[];let used=0;for(const[,x]of sc){if(used+x.c.length>limit)break;out.push(x);used+=x.c.length;if(out.length>=3)break}
  if(!out.length&&sc.length)out.push({n:sc[0][1].n,c:sc[0][1].c.slice(0,limit)});return out}
 function docCtx(q){lastUsed=[];if(!S.docOn||!docs.length||!q)return"";
- const f=find(q,Math.floor((S.ctx-S.maxt)*0.9));if(!f.length)return"";
+ const f=find(q,S.online?3500:Math.floor((S.ctx-S.maxt)*0.9));if(!f.length)return"";
  lastUsed=[...new Set(f.map(x=>x.n))];
  return "\nUse these excerpts from the user's files when they help, and say which file you used.\n"+f.map(x=>"["+x.n+"] "+x.c).join("\n---\n")}
 function docRender(){const l=$("#docList");l.innerHTML="";
@@ -375,8 +396,9 @@ function docRender(){const l=$("#docList");l.innerHTML="";
 function saveDocs(){idx=null;WR("gi-docs",docs);docRender()}
 $("#docAdd").onclick=()=>$("#docIn").click();
 $("#docIn").onchange=async e=>{let tot=docs.reduce((a,d)=>a+d.text.length,0);
- for(const f of e.target.files){if(f.size>1e6){toast(f.name+": too big (max 1 MB)");continue}
-  let t;try{t=await f.text()}catch(_){continue}
+ for(const f of e.target.files){const pdf=/\.pdf$/i.test(f.name);if(f.size>(pdf?25e6:1e6)){toast(f.name+": too big");continue}
+  let t;try{t=pdf?await pdfText(f,(p,n)=>toast(f.name+" "+p+"/"+n)):await f.text()}catch(_){toast(f.name+": could not read");continue}
+  if(!t.trim()){toast(f.name+": no text found");continue}
   if(t.slice(0,2000).indexOf("\u0000")>=0){toast(f.name+": not a text file");continue}
   if(tot+t.length>1.2e6){toast("Storage full. Delete some files.");break}
   docs=docs.filter(d=>d.name!==f.name);docs.push({name:f.name,text:t});tot+=t.length}
@@ -384,7 +406,7 @@ $("#docIn").onchange=async e=>{let tot=docs.reduce((a,d)=>a+d.text.length,0);
 $("#docOn").onchange=e=>{S.docOn=e.target.checked;save()};
 $("#autoSum").onchange=e=>{S.autoSum=e.target.checked;save()};
 docRender();
-function maybeSum(){if(!S.autoSum||busy||!model)return;
+function maybeSum(){if(!S.autoSum||busy||!model||S.online)return;
  const rows=$$("#log .row").filter(r=>!r._s);if(rows.length<=12)return;
  const old=rows.slice(0,rows.length-6);
  let txt=old.map(r=>(r.classList.contains("u")?"User: ":"GI: ")+r._raw.slice(0,400)).join("\n");
@@ -393,13 +415,13 @@ function maybeSum(){if(!S.autoSum||busy||!model)return;
  mode="sum";sumBuf="";sumRows=old;busy=true;$("#stat").style.display="block";$("#stat").textContent="\U0001F9E0 Updating memory\u2026";run(ms,0.2,110)}
 function endAux(err){const m=mode;mode="chat";ui(false);
  if(m==="sum"){const s=sumBuf.trim();if(s&&!err){convSum=s;sumRows.forEach(r=>r._s=true);WR("gi-sum",convSum);persist()}}
- else benchDone(err);
+ else if(m==="test")testDone(err);else benchDone(err);
  if(pendingSend){pendingSend=false;send()}}
 function benchRender(){const l=$("#benchList");l.innerHTML="";
  bench.slice(0,8).forEach(b=>{const c=document.createElement("div");c.className="card";c.innerHTML='<div class="t"><b></b><small></small></div><span></span>';
   c.querySelector("b").textContent=b.m;c.querySelector("small").textContent="first token "+b.f+" ms \u00b7 ctx "+b.c+" \u00b7 "+b.h+" threads";
   const sp=c.querySelector("span");sp.textContent=b.t+" tok/s";sp.style.cssText="color:var(--c1);font:800 15px Orbitron";l.appendChild(c)})}
-$("#bench").onclick=()=>{if(busy){toast("Wait for the current reply");return}if(!model){toast("Load a model first");return}
+$("#bench").onclick=()=>{if(busy){toast("Wait for the current reply");return}if(S.online){toast("Benchmark measures the local model. Switch to local mode.");return}if(!model){toast("Load a model first");return}
  mode="bench";nTok=0;bF=0;bT=performance.now();busy=true;$("#benchNote").textContent="Running\u2026 about 20 seconds";
  run([{role:"system",content:"You are a helpful assistant."},{role:"user",content:"Write one short paragraph about the ocean."}],0,64)};
 function benchDone(err){const e=performance.now();$("#benchNote").textContent="";
@@ -410,7 +432,7 @@ benchRender();
 $("#autoLoad").onchange=e=>{S.autoLoad=e.target.checked;save()};
 if(NAT){const ln=Android.loadedName();
  if(ln){model=lib.find(x=>x.name===ln)||{name:ln,size:0,uri:null};setPill(ln,1);renderLib()}
- else if(S.autoLoad&&lib[0]&&lib[0].uri)Android.loadModel(lib[0].uri,S.ctx,S.thr)}
+ else if(S.autoLoad&&!S.online&&lib[0]&&lib[0].uri)Android.loadModel(lib[0].uri,S.ctx,S.thr)}
 // ---- v1.4: model downloads ----
 let dls=RD("gi-dl",[]),ramMB=NAT?Android.ramMB():4096,cbs={},cbId=0,lastFiles=null,lastRepos=[];
 dls.forEach(d=>{if(d.state==="run")d.state="pause"});
@@ -461,6 +483,97 @@ $("#hfGo").onclick=()=>{const q=$("#hfq").value.trim();if(!q)return;$("#hfRes").
 $("#dlGo").onclick=()=>{const u=$("#dlUrl").value.trim();if(!/^https:\/\/.+\.gguf(\?.*)?$/i.test(u)){toast("Paste an https link ending in .gguf");return}
  let n="model.gguf";try{n=decodeURIComponent(u.split("?")[0].split("/").pop())}catch(e){}dlStart(u,n);$("#dlUrl").value=""};
 recRender();dlRender();
+// ---- v1.5: online mode ----
+let forceOnline=false;
+const PRE={"OpenAI":["https://api.openai.com/v1","openai","gpt-4o-mini"],"Gemini":["https://generativelanguage.googleapis.com/v1beta/openai","openai","gemini-2.0-flash"],"OpenRouter":["https://openrouter.ai/api/v1","openai","openai/gpt-4o-mini"],"Groq":["https://api.groq.com/openai/v1","openai","llama-3.1-8b-instant"],"Anthropic":["https://api.anthropic.com/v1","anthropic","claude-haiku-5-5"],"Custom":["","openai",""]};
+let OL=Object.assign({preset:"OpenAI",url:PRE.OpenAI[0],key:"",model:"",img:"",fmt:"openai"},RD("gi-online",{}));
+const saveOL=()=>WR("gi-online",OL),isConfigured=()=>!!(OL.url&&OL.key&&OL.model);
+$("#onPre").innerHTML=Object.keys(PRE).map(k=>"<option>"+k+"</option>").join("");
+function refreshPill(){if(S.online)rawPill("\u2601 "+(OL.model||"online"),1);else if(model)rawPill(model.name,1);else rawPill("No model",0)}
+function olPaint(){$("#onOn").checked=!!S.online;$("#onPre").value=OL.preset;$("#onUrl").value=OL.url;$("#onKey").value=OL.key;$("#onModel").value=OL.model;$("#onImg").value=OL.img||"";
+ $("#onModel").placeholder="e.g. "+(PRE[OL.preset]||PRE.Custom)[2];$("#onFmt").value=OL.fmt;$("#onShare").checked=!!S.onShare;refreshPill()}
+$("#onPre").onchange=e=>{const p=PRE[e.target.value];OL.preset=e.target.value;if(p[0])OL.url=p[0];OL.fmt=p[1];saveOL();olPaint()};
+[["onUrl","url"],["onKey","key"],["onModel","model"],["onImg","img"]].forEach(([id,k])=>$("#"+id).oninput=e=>{OL[k]=e.target.value.trim();saveOL();refreshPill()});
+$("#onFmt").onchange=e=>{OL.fmt=e.target.value;saveOL()};
+$("#onShare").onchange=e=>{S.onShare=e.target.checked;save()};
+$("#onOn").onchange=e=>{if(e.target.checked&&!isConfigured()){e.target.checked=false;toast("Fill in URL, API key and model first");return}S.online=e.target.checked;save();refreshPill()};
+$("#pill").style.cursor="pointer";
+$("#pill").onclick=()=>{if(!S.online&&!isConfigured()){toast("Set up online mode in Settings first");return}S.online=!S.online;save();olPaint();toast(S.online?"Online mode: messages go to your provider":"Local mode: fully offline")};
+$("#onTest").onclick=()=>{if(busy){toast("Wait for the current reply");return}if(!isConfigured()){toast("Fill in URL, API key and model first");return}
+ if(!NAT){toast("Testing works in the installed app");return}
+ forceOnline=true;mode="test";sumBuf="";busy=true;toast("Testing\u2026");run([{role:"user",content:"Reply with the single word OK."}],0,8)};
+function testDone(err){forceOnline=false;const r=sumBuf.trim();toast(err?"Failed: "+err.slice(0,140):"Connected \u2713 "+r.slice(0,30))}
+
+// ---- v1.6: images, PDF, code ZIP, model list, token usage ----
+let lastUse=null,imgBuf="",lastPrompt="",ONM=[],USE=RD("gi-use",{in:0,out:0,by:{}});
+function draw(r){draw0(r);
+ if(r._img){const i=document.createElement("img");i.src=r._img;i.style.cssText="display:block;max-width:100%;border-radius:12px;margin-top:8px";r.bub.appendChild(i)}
+ const z=r.querySelector('[data-a="zip"]');if(z)z.style.display=/```/.test(r._raw||"")?"":"none";
+ const m=r.querySelector('[data-a="img"]');if(m)m.style.display=r._img?"":"none"}
+const b64=u=>{let s="";for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
+function saveBytes(name,mime,u8){if(!NAT){toast("Saving works in the installed app");return}Android.saveFile(name,mime,b64(u8))}
+// images
+function genImage(p){mkRow("u","/image "+p);
+ if(!S.online||!isConfigured()||!OL.img){mkRow("a","Image creation needs online mode and an image model. Open Settings \u2192 Online mode.");persist();return}
+ if(OL.fmt==="anthropic"){mkRow("a","Anthropic has no image generation. Use an OpenAI-compatible provider.");persist();return}
+ if(!NAT){mkRow("a","Image creation works in the installed app.");return}
+ mode="image";imgBuf="";lastPrompt=p;ui(true);cur=mkRow("a","");
+ Android.imageGen(JSON.stringify({url:OL.url,key:OL.key,model:OL.img,prompt:p,size:"1024x1024"}))}
+window.onImgChunk=c=>{imgBuf+=c};
+window.onImageDone=err=>{const r=cur;cur=null;mode="chat";ui(false);if(!r)return;
+ if(err){r._raw="\u26a0\ufe0f "+err}else{r._img="data:image/png;base64,"+imgBuf;r._raw="\U0001F5BC "+lastPrompt}imgBuf="";draw(r);bottom();persist()};
+function saveImg(r){if(!r._img)return;const bin=atob(r._img.split(",")[1]),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);saveBytes("gi-image-"+Date.now()+".png","image/png",u)}
+// code -> zip
+const EXT={js:"js",javascript:"js",html:"html",css:"css",python:"py",py:"py",json:"json",kotlin:"kt",java:"java",c:"c",cpp:"cpp",bash:"sh",sh:"sh",xml:"xml",yaml:"yml",yml:"yml",ts:"ts",typescript:"ts",md:"md",markdown:"md",sql:"sql"};
+function codeFiles(raw){const out=[],used={},re=/(^|\n)([^\n]*)\n?```([^\n]*)\n([\s\S]*?)(```|$)/g;let m,n=0;
+ const pick=s=>{const x=(s||"").match(/([\w\-./]+\.[A-Za-z0-9]{1,8})\b/);return x?x[1]:null};
+ while((m=re.exec(raw))){n++;const info=m[3].trim(),code=m[4];
+  const cm=code.match(/^\s*(?:\/\/|#|<!--|\/\*|--)\s*(?:file(?:name)?:?\s*)?([\w\-./]+\.[A-Za-z0-9]{1,8})/i);
+  let name=pick(info.split(/\s+/).slice(1).join(" "))||pick(m[2])||(cm&&cm[1]);
+  if(!name)name="file"+n+"."+(EXT[(info.split(/\s+/)[0]||"").toLowerCase()]||"txt");
+  name=name.replace(/^\/+/,"").replace(/\.\.\//g,"");if(used[name])name=name.replace(/(\.[^.]*)?$/,"_"+n+"$1");used[name]=1;
+  out.push({name,data:code.replace(/\n$/,"")})}return out}
+const CRC=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0};
+function makeZip(files){const enc=new TextEncoder(),parts=[],cd=[];let off=0;
+ const d=new Date(),dt=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate(),tm=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1);
+ const u16=v=>[v&255,v>>8&255],u32=v=>[v&255,v>>8&255,v>>16&255,v>>>24&255];
+ files.forEach(f=>{const nb=enc.encode(f.name),db=enc.encode(f.data),c=crc32(db);
+  const lh=[0x50,0x4b,3,4,...u16(20),...u16(0x0800),...u16(0),...u16(tm),...u16(dt),...u32(c),...u32(db.length),...u32(db.length),...u16(nb.length),...u16(0)];
+  parts.push(new Uint8Array(lh),nb,db);
+  cd.push(new Uint8Array([0x50,0x4b,1,2,...u16(20),...u16(20),...u16(0x0800),...u16(0),...u16(tm),...u16(dt),...u32(c),...u32(db.length),...u32(db.length),...u16(nb.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)]),nb);
+  off+=lh.length+nb.length+db.length});
+ const cdl=cd.reduce((a,b)=>a+b.length,0);
+ const end=new Uint8Array([0x50,0x4b,5,6,...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cdl),...u32(off),...u16(0)]);
+ const all=[...parts,...cd,end],out=new Uint8Array(all.reduce((a,b)=>a+b.length,0));let p=0;all.forEach(b=>{out.set(b,p);p+=b.length});return out}
+function zipCode(r){const f=codeFiles(r._raw||"");if(!f.length){toast("No code found");return}saveBytes("gi-code-"+Date.now()+".zip","application/zip",makeZip(f))}
+// PDF (pdf.js from assets, works offline)
+const loadJs=src=>new Promise((ok,no)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("missing "+src));document.head.appendChild(s)});
+let pdfReady=null;
+const pdfInit=()=>pdfReady||(pdfReady=loadJs("pdf.min.js").then(()=>loadJs("pdf.worker.min.js")).then(()=>{pdfjsLib.GlobalWorkerOptions.workerSrc="pdf.worker.min.js"}).catch(e=>{pdfReady=null;throw e}));
+async function pdfText(file,onP){await pdfInit();const doc=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;let out="";
+ for(let p=1;p<=doc.numPages;p++){onP&&onP(p,doc.numPages);const c=await(await doc.getPage(p)).getTextContent();let t="";c.items.forEach(i=>{t+=i.str+(i.hasEOL?"\n":" ")});out+=t.trim()+"\n\n";if(out.length>600000)break;await new Promise(r=>setTimeout(r,0))}
+ return out.trim()}
+// model list + usage
+function onModelsRender(){const l=$("#onModels");l.innerHTML="";const q=$("#onSearch").value.toLowerCase(),f=$("#onFree").checked;
+ const a=ONM.filter(m=>(!f||m.free)&&m.id.toLowerCase().includes(q)).slice(0,40);
+ if(!a.length){if(ONM.length)l.innerHTML='<p class="note" style="margin-top:8px">No match.</p>';return}
+ a.forEach(m=>l.appendChild(mk(m.id,m.free?"free (provider price is 0)":"",null,[["Use",()=>{OL.model=m.id;saveOL();olPaint();toast("Model: "+m.id)}]])));
+ if(OL.preset!=="OpenRouter")l.insertAdjacentHTML("beforeend",'<p class="note" style="margin-top:8px">Only OpenRouter reports prices, so the Free filter works there.</p>')}
+$("#onSearch").oninput=onModelsRender;$("#onFree").onchange=onModelsRender;
+$("#onList").onclick=()=>{if(!OL.url||(!OL.key&&OL.preset!=="OpenRouter")){toast("Fill in URL and API key first");return}
+ if(!NAT){toast("Works in the installed app");return}
+ const id=++cbId;cbs[id]=(st,b)=>{let a=[];try{const j=JSON.parse(b);a=j.data||j.models||[]}catch(e){}
+  if(st!==200||!a.length){toast("Could not load models ("+st+")");return}
+  ONM=a.map(m=>({id:(m.id||m.name||"").replace(/^models\//,""),free:!!(m.pricing&&Number(m.pricing.prompt)===0&&Number(m.pricing.completion)===0)||/:free$/.test(m.id||"")})).filter(m=>m.id).sort((x,y)=>(y.free-x.free)||x.id.localeCompare(y.id));
+  onModelsRender();toast(ONM.length+" models")};
+ Android.apiGet(JSON.stringify({url:OL.url,key:OL.key,fmt:OL.fmt}),id)};
+function useRender(){const b=$("#useBox");b.innerHTML='<div class="t"><b></b><small style="white-space:pre-wrap"></small></div>';
+ b.querySelector("b").textContent="Total \u2191"+USE.in+" \u2193"+USE.out+" tokens";
+ b.querySelector("small").textContent=Object.entries(USE.by).slice(0,6).map(([k,v])=>k+": \u2191"+v.in+" \u2193"+v.out).join("\n")||"No online replies yet."}
+window.onUsage=(i,o)=>{lastUse=[i,o];USE.in+=i;USE.out+=o;const k=OL.model||"?",m=USE.by[k]||(USE.by[k]={in:0,out:0});m.in+=i;m.out+=o;WR("gi-use",USE);useRender()};
+$("#useReset").onclick=()=>{USE={in:0,out:0,by:{}};WR("gi-use",USE);useRender()};
+useRender();olPaint();
 </script>
 </body>
 </html>

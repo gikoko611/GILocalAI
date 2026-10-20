@@ -1,6 +1,7 @@
 package com.gikoko.gilocalai
 
 import android.app.Activity
+import android.util.Base64
 import android.app.ActivityManager
 import java.net.HttpURLConnection
 import java.net.URL
@@ -28,6 +29,8 @@ class MainActivity : Activity() {
     private var thr = 4
     private val busy = AtomicBoolean(false)
     private var loadedName = ""
+    @Volatile private var onlineCancel = false
+    private var pendingSave: ByteArray? = null
     private val dl by lazy { Downloader(File(filesDir, "models").apply { mkdirs() }) { json -> js("window.onDl($json)") } }
     private var fileCb: ValueCallback<Array<Uri>>? = null
 
@@ -64,6 +67,19 @@ class MainActivity : Activity() {
         if (req == 2) {
             fileCb?.onReceiveValue(if (res == RESULT_OK) WebChromeClient.FileChooserParams.parseResult(res, data) else null)
             fileCb = null
+        }
+        if (req == 3) {
+            val bytes = pendingSave
+            pendingSave = null
+            val uri = data?.data
+            if (res == RESULT_OK && uri != null && bytes != null) {
+                try {
+                    contentResolver.openOutputStream(uri)?.use { it.write(bytes) }
+                    js("toast('Saved')")
+                } catch (e: Throwable) {
+                    js("toast(" + q("Could not save: " + (e.message ?: "")) + ")")
+                }
+            }
         }
     }
 
@@ -126,7 +142,60 @@ class MainActivity : Activity() {
                 }, 1)
             }
         }
-        @JavascriptInterface fun stop() { Llama.stop() }
+        @JavascriptInterface fun stop() { Llama.stop(); onlineCancel = true }
+        @JavascriptInterface fun saveFile(name: String, mime: String, b64: String) {
+            pendingSave = Base64.decode(b64, Base64.DEFAULT)
+            runOnUiThread {
+                startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = mime
+                    putExtra(Intent.EXTRA_TITLE, name)
+                }, 3)
+            }
+        }
+        @JavascriptInterface fun apiGet(json: String, id: Int) {
+            Thread {
+                var st = 0
+                var body: String
+                try {
+                    val r = Online.get(JSONObject(json))
+                    st = r.first
+                    body = r.second
+                } catch (e: Throwable) {
+                    body = e.message ?: "network error"
+                }
+                js("window.onHttp($id,$st," + q(body) + ")")
+            }.start()
+        }
+        @JavascriptInterface fun imageGen(json: String) {
+            if (!busy.compareAndSet(false, true)) return
+            Thread {
+                var err: String
+                try {
+                    val r = Online.image(JSONObject(json))
+                    err = r.second
+                    if (err.isEmpty()) r.first.chunked(400000).forEach { js("window.onImgChunk(" + q(it) + ")") }
+                } catch (e: Throwable) {
+                    err = e.message ?: "Network error"
+                }
+                busy.set(false)
+                js("window.onImageDone(" + q(err) + ")")
+            }.start()
+        }
+        @JavascriptInterface fun onlineChat(json: String) {
+            if (!busy.compareAndSet(false, true)) return
+            onlineCancel = false
+            Thread {
+                var err: String
+                try {
+                    err = Online.chat(JSONObject(json), { onlineCancel }, { i, n -> js("window.onUsage($i,$n)") }) { t -> js("window.onToken(" + q(t) + ")") }
+                } catch (e: Throwable) {
+                    err = e.message ?: "Network error"
+                }
+                busy.set(false)
+                js("window.onGenDone(" + q(err) + ")")
+            }.start()
+        }
         @JavascriptInterface fun ramMB(): Int {
             val m = ActivityManager.MemoryInfo()
             (getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager).getMemoryInfo(m)
