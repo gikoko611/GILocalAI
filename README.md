@@ -43,30 +43,7 @@
 | 🌐 | **Unicode safe** | Burmese and emoji text stream correctly |
 | 🎨 | **Cyber green UI** | Dark green theme with an animated 3D **GI** intro |
 
-
-## 🧰 Code & Video Studio (new development branch)
-
-The `feature/video-studio-long-context` branch adds a separate Studio activity without replacing the existing AI chat, model manager, memory, or online provider screens.
-
-### Code Studio
-- Local WebView sandbox for HTML5, CSS, JavaScript, SVG and Canvas previews.
-- JSON validation and Markdown preview.
-- Source export.
-- Python, Lua, C/C++, Java, Kotlin, Rust, Go, SQL and Bash are currently editor-only. They are **not** executed until a compatible on-device runtime/compiler is integrated and tested.
-- WebAssembly modules can run through WebView when the project supplies a compatible WASM module.
-
-### Code-to-MP4
-- Deterministic Canvas frame generation.
-- Streaming frame delivery (frames are not accumulated in memory).
-- Android MediaCodec H.264 encoding and MediaMuxer MP4 container.
-- 24/30 FPS presets and 480p/720p/portrait/square output choices.
-- Saves to `Movies/GI Local AI`.
-- Current exporter is silent video only; audio muxing, subtitles, multi-track timeline, trim/split and transitions are future modules, not claimed as implemented.
-
-### Device notes
-Start with 640×360 at 24 FPS on Redmi 9A. 720p may be slow or fail depending on the device encoder and free RAM. The app must remain open during export. The renderer streams frames but still uses temporary bitmap memory for each frame.
-
-\n## 📱 Made for
+## 📱 Made for
 
 Redmi 9A and similar 32-bit phones (`armeabi-v7a`) with **4 GB RAM**.
 Want 64-bit? Add `'arm64-v8a'` to `abiFilters` in `app/build.gradle`.
