@@ -37,7 +37,7 @@ header b{font:800 14px Orbitron;flex:1;letter-spacing:.08em}
 main{flex:1;min-height:0;position:relative}
 section{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;padding:14px 14px 0}
 section.on{display:flex}
-nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:color-mix(in srgb,var(--panel) 88%,transparent)}
+nav{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);background:color-mix(in srgb,var(--panel) 88%,transparent)}
 nav button{background:none;border:0;color:var(--mut);padding:10px 0 9px;font:600 12px "Chakra Petch";cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-top:2px solid transparent}
 nav button.on{color:var(--c1);border-top-color:var(--c1)}
 nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
@@ -212,6 +212,7 @@ header::after{bottom:-8px}nav::before{top:-8px}
     <button data-t="models"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z M12 12l8-4.5 M12 12v9 M12 12L4 7.5"/></svg>Models</button>
     <button data-t="memory"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/><path d="M9 2v4 M15 2v4 M9 18v4 M15 18v4 M2 9h4 M2 15h4 M18 9h4 M18 15h4"/></svg>Memory</button>
     <button data-t="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10 M18 7h2 M4 17h2 M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Settings</button>
+    <button id="studioOpen"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z M8 9l3 3-3 3 M13 15h3"/></svg>Studio</button>
   </nav>
 </div>
 <div id="toast"></div>
@@ -246,7 +247,8 @@ function fr(t){requestAnimationFrame(fr);if(document.hidden||t-last<33)return;la
 rs();addEventListener("resize",rs);requestAnimationFrame(fr);
 
 // tabs + settings
-$$("nav button").forEach(b=>b.onclick=()=>{$$("nav button,section").forEach(x=>x.classList.remove("on"));b.classList.add("on");$("#"+b.dataset.t).classList.add("on")});
+$("nav button[data-t]").forEach(b=>b.onclick=()=>{$$("nav button,section").forEach(x=>x.classList.remove("on"));b.classList.add("on");$("#"+b.dataset.t).classList.add("on")});
+$("#studioOpen").onclick=()=>{if(NAT)Android.openStudio();else toast("Open Studio in the Android app")};
 const map={temp:["vT",v=>(+v).toFixed(2)],maxt:["vM",v=>v],ctx:["vC",v=>v],thr:["vH",v=>v]};
 $("#persona").innerHTML=Object.keys(PERS).map(k=>"<option>"+k+"</option>").join("")+"<option>Custom</option>";
 function paint(){for(const k in map){$("#"+k).value=S[k];$("#"+map[k][0]).textContent=map[k][1](S[k])}
