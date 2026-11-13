@@ -39,7 +39,7 @@ class StudioActivity : Activity() {
     }
 
     inner class Bridge {
-        @JavascriptInterface fun beginExport(width: Int, height: Int, fps: Int, name: String): String = try {
+        @JavascriptInterface fun beginExport(width: Int, height: Int, fps: Int, name: String): String { return try {
             if (encoder != null) return "An export is already running"
             val w = width.coerceIn(160, 1280).let { it - it % 2 }
             val h = height.coerceIn(160, 1280).let { it - it % 2 }
@@ -48,16 +48,16 @@ class StudioActivity : Activity() {
             output = File(cacheDir, "render_" + System.currentTimeMillis() + ".mp4")
             encoder = H264Mp4Encoder(w, h, rate, output!!)
             ""
-        } catch (e: Throwable) { encoder = null; e.message ?: "Encoder initialization failed" }
+        } catch (e: Throwable) { encoder = null; e.message ?: "Encoder initialization failed" } }
 
-        @JavascriptInterface fun addFrame(dataUrl: String): String = try {
+        @JavascriptInterface fun addFrame(dataUrl: String): String { return try {
             val raw = Base64.decode(dataUrl.substringAfter(","), Base64.DEFAULT)
             val bmp = BitmapFactory.decodeByteArray(raw, 0, raw.size) ?: return "Invalid frame image"
             try { encoder?.writeFrame(bmp) ?: return "Encoder is not running" } finally { bmp.recycle() }
             ""
-        } catch (e: Throwable) { e.message ?: "Frame encoding failed" }
+        } catch (e: Throwable) { e.message ?: "Frame encoding failed" } }
 
-        @JavascriptInterface fun finishExport(): String = try {
+        @JavascriptInterface fun finishExport(): String { return try {
             val e = encoder ?: return "No export is running"
             e.finish()
             encoder = null
@@ -73,7 +73,7 @@ class StudioActivity : Activity() {
             contentResolver.openOutputStream(uri)?.use { out -> FileInputStream(file).use { it.copyTo(out) } }
             file.delete(); output = null
             "Saved to Movies/GI Local AI/$outputName"
-        } catch (e: Throwable) { encoder = null; e.message ?: "MP4 finalization failed" }
+        } catch (e: Throwable) { encoder = null; e.message ?: "MP4 finalization failed" } }
 
         @JavascriptInterface fun cancelExport() {
             try { encoder?.abort() } catch (_: Throwable) {}
