@@ -247,7 +247,19 @@ function fr(t){requestAnimationFrame(fr);if(document.hidden||t-last<33)return;la
 rs();addEventListener("resize",rs);requestAnimationFrame(fr);
 
 // tabs + settings
-$("nav button[data-t]").forEach(b=>b.onclick=()=>{$$("nav button,section").forEach(x=>x.classList.remove("on"));b.classList.add("on");$("#"+b.dataset.t).classList.add("on")});
+// Robust bottom navigation: delegate clicks and validate the target section.
+const mainNav=$("nav");
+if(mainNav){
+ mainNav.addEventListener("click",e=>{
+  const b=e.target.closest("button[data-t]");
+  if(!b||!mainNav.contains(b))return;
+  const target=document.getElementById(b.dataset.t);
+  if(!target||!target.matches("main section")){toast("Page not found: "+b.dataset.t);return}
+  $("nav button[data-t]").forEach(x=>x.classList.toggle("on",x===b));
+  $("main section").forEach(x=>x.classList.toggle("on",x===target));
+  target.scrollTop=0;
+ });
+}
 $("#studioOpen").onclick=()=>{if(NAT)Android.openStudio();else toast("Open Studio in the Android app")};
 const map={temp:["vT",v=>(+v).toFixed(2)],maxt:["vM",v=>v],ctx:["vC",v=>v],thr:["vH",v=>v]};
 $("#persona").innerHTML=Object.keys(PERS).map(k=>"<option>"+k+"</option>").join("")+"<option>Custom</option>";
