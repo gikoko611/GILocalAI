@@ -1,6 +1,7 @@
 package com.gikoko.gilocalai
 
 import android.content.Context
+import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMuxer
@@ -43,7 +44,7 @@ object AudioMuxer {
     private fun copyTrack(extractor: MediaExtractor, sourceTrack: Int, muxer: MediaMuxer, targetTrack: Int, maxDurationUs: Long) {
         extractor.selectTrack(sourceTrack)
         val buffer = ByteBuffer.allocate(1 shl 20)
-        val info = MediaMuxer.BufferInfo()
+        val info = MediaCodec.BufferInfo()
         while (true) {
             buffer.clear()
             val size = extractor.readSampleData(buffer, 0)
