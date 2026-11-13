@@ -8,7 +8,6 @@
         android:allowBackup="true"
         android:largeHeap="true"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
-        <activity android:name=".StudioActivity" android:exported="false" android:screenOrientation="unspecified"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
