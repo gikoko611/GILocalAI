@@ -133,6 +133,7 @@ class MainActivity : Activity() {
     }
 
     inner class Bridge {
+        @JavascriptInterface fun openStudio() { runOnUiThread { startActivity(Intent(this@MainActivity, StudioActivity::class.java)) } }
         @JavascriptInterface fun pickModel(c: Int, t: Int) {
             ctx = c; thr = t
             runOnUiThread {
