@@ -2,6 +2,8 @@ package com.gikoko.gilocalai
 
 import android.app.Activity
 import android.content.ContentValues
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -20,6 +22,8 @@ class StudioActivity : Activity() {
     private var encoder: H264Mp4Encoder? = null
     private var output: File? = null
     private var outputName = "GI-Animation.mp4"
+    private var selectedAudioUri: Uri? = null
+    private val audioPickerRequest = 4107
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +43,30 @@ class StudioActivity : Activity() {
         web.loadUrl("file:///android_asset/studio.html")
     }
 
+    private fun launchAudioPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "audio/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        }
+        startActivityForResult(intent, audioPickerRequest)
+    }
+
+    @Deprecated("Legacy Activity result callback")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == audioPickerRequest && resultCode == RESULT_OK) {
+            val uri = data?.data ?: return
+            try { contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: Throwable) {}
+            selectedAudioUri = uri
+            web.evaluateJavascript("window.onAudioPicked && window.onAudioPicked(" + JSONObject.quote(uri.toString()) + ")", null)
+        }
+    }
+
     inner class Bridge {
+        @JavascriptInterface fun pickAudio() { runOnUiThread { launchAudioPicker() } }
+        @JavascriptInterface fun clearAudio() { selectedAudioUri = null }
+
         @JavascriptInterface fun generateVideo(json: String) {
             Thread {
                 try {
@@ -84,6 +111,17 @@ class StudioActivity : Activity() {
             encoder = null
             val file = output ?: return "MP4 output missing"
             if (!file.exists() || file.length() < 1024) return "MP4 validation failed"
+            val soundtrack = selectedAudioUri
+            if (soundtrack != null) {
+                val muxed = File(cacheDir, "muxed_" + System.currentTimeMillis() + ".mp4")
+                AudioMuxer.attach(this@StudioActivity, file, soundtrack, muxed)
+                if (!muxed.exists() || muxed.length() < 1024) return "Audio mux validation failed"
+                file.delete()
+                if (!muxed.renameTo(file)) {
+                    muxed.copyTo(file, overwrite = true)
+                    muxed.delete()
+                }
+            }
             val values = ContentValues().apply {
                 put(MediaStore.Video.Media.DISPLAY_NAME, outputName)
                 put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
