@@ -3,7 +3,7 @@ name: Build APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, 'feature/**']
 
 jobs:
   build:
@@ -35,6 +35,13 @@ jobs:
       - name: Build Debug APK
         run: gradle assembleDebug --no-daemon
 
+      - name: Verify APK package and ARMv7 ABI
+        run: |
+          APK=$(find app/build/outputs/apk/debug -name '*.apk' -print -quit)
+          test -n "$APK"
+          $ANDROID_HOME/build-tools/34.0.0/aapt dump badging "$APK" | tee /tmp/apk-badging.txt
+          grep -q "package: name='com.gikoko.gilocalai'" /tmp/apk-badging.txt
+          unzip -l "$APK" | grep -q 'lib/armeabi-v7a/'
       - uses: actions/upload-artifact@v4
         with:
           name: GI-local-AI-apk-debug
