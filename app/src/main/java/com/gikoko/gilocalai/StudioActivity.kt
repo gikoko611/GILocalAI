@@ -13,6 +13,7 @@ import android.webkit.WebViewClient
 import android.graphics.BitmapFactory
 import java.io.File
 import java.io.FileInputStream
+import org.json.JSONObject
 
 class StudioActivity : Activity() {
     private lateinit var web: WebView
@@ -29,7 +30,7 @@ class StudioActivity : Activity() {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.allowFileAccess = false
-            settings.allowContentAccess = false
+            settings.allowContentAccess = true
             webViewClient = WebViewClient()
             webChromeClient = WebChromeClient()
             addJavascriptInterface(Bridge(), "Studio")
@@ -39,6 +40,26 @@ class StudioActivity : Activity() {
     }
 
     inner class Bridge {
+        @JavascriptInterface fun generateVideo(json: String) {
+            Thread {
+                try {
+                    val request = JSONObject(json)
+                    val prompt = request.getString("prompt")
+                    val system = "You are a professional motion designer and JavaScript Canvas animator. Return ONLY executable JavaScript code, no markdown. Define drawFrame(t, ctx, width, height) using CanvasRenderingContext2D. t is milliseconds. Draw the entire frame on every call; animation must be deterministic based only on t. Canvas 2D APIs only. No DOM, network, timers, imports, eval, or requestAnimationFrame. Optimize for Android phones. Create a polished cinematic animation matching the user prompt, with background, motion, lighting and visual details. No external images or fonts."
+                    val msgs = org.json.JSONArray()
+                    msgs.put(JSONObject().put("role", "system").put("content", system))
+                    msgs.put(JSONObject().put("role", "user").put("content", prompt))
+                    request.put("msgs", msgs); request.put("temp", 0.7); request.put("max", 2200)
+                    val err = Online.chat(request, { false }, { _, _ -> }) { token ->
+                        runOnUiThread { web.evaluateJavascript("window.onAiVideoChunk(" + JSONObject.quote(token) + ")", null) }
+                    }
+                    runOnUiThread { web.evaluateJavascript("window.onAiVideoDone(" + JSONObject.quote(err) + ")", null) }
+                } catch (e: Throwable) {
+                    val err = e.message ?: "AI video code generation failed"
+                    runOnUiThread { web.evaluateJavascript("window.onAiVideoDone(" + JSONObject.quote(err) + ")", null) }
+                }
+            }.start()
+        }
         @JavascriptInterface fun beginExport(width: Int, height: Int, fps: Int, name: String): String { return try {
             if (encoder != null) return "An export is already running"
             val w = width.coerceIn(160, 1280).let { it - it % 2 }
@@ -72,7 +93,7 @@ class StudioActivity : Activity() {
                 ?: return "Could not create Movies output"
             contentResolver.openOutputStream(uri)?.use { out -> FileInputStream(file).use { it.copyTo(out) } }
             file.delete(); output = null
-            "Saved to Movies/GI Local AI/$outputName"
+            "Saved|" + uri.toString()
         } catch (e: Throwable) { encoder = null; e.message ?: "MP4 finalization failed" } }
 
         @JavascriptInterface fun cancelExport() {
